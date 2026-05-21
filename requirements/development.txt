@@ -1,0 +1,9 @@
+-r base.txt
+
+# Development Tools
+django-debug-toolbar>=4.2
+ipython>=8.0
+black>=24.0
+flake8>=7.0
+pytest-django>=4.7
+coverage>=7.0

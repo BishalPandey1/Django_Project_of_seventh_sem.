@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - MathViz</title>
+</head>
+<body>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    .login-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    
+    .login-container {
+        display: flex;
+        max-width: 1000px;
+        width: 100%;
+        gap: 60px;
+        align-items: center;
+    }
+    
+    .login-branding {
+        flex: 1;
+        padding: 20px;
+        color: white;
+    }
+    
+    .login-branding h1 {
+        font-size: 2.8rem;
+        font-weight: 700;
+        margin: 0 0 16px 0;
+        line-height: 1.2;
+    }
+    
+    .login-branding p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        line-height: 1.6;
+        margin: 0;
+    }
+    
+    .brand-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+        backdrop-filter: blur(10px);
+    }
+    
+    .brand-icon svg {
+        width: 48px;
+        height: 48px;
+        fill: white;
+    }
+    
+    .login-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        padding: 32px;
+        width: 420px;
+        max-width: 100%;
+    }
+    
+    .login-card h2 {
+        font-size: 1.6rem;
+        font-weight: 600;
+        color: #1c1e21;
+        margin: 0 0 8px 0;
+        text-align: center;
+    }
+    
+    .login-subtitle {
+        text-align: center;
+        color: #606770;
+        font-size: 0.9rem;
+        margin: 0 0 24px 0;
+    }
+    
+    .form-group {
+        margin-bottom: 18px;
+    }
+    
+    .form-group label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #606770;
+        margin-bottom: 8px;
+    }
+    
+    .input-wrapper {
+        position: relative;
+    }
+    
+    .input-wrapper svg {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 20px;
+        height: 20px;
+        fill: #90949c;
+        transition: fill 0.2s;
+    }
+    
+    .input-wrapper input {
+        width: 100%;
+        padding: 14px 16px 14px 48px;
+        font-size: 1rem;
+        border: 2px solid #e4e6eb;
+        border-radius: 10px;
+        background: #f5f6f7;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+    
+    .input-wrapper input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102,126,234,0.15);
+        background: white;
+    }
+    
+    .input-wrapper input:focus + svg,
+    .input-wrapper input:focus ~ svg {
+        fill: #667eea;
+    }
+    
+    .input-wrapper input::placeholder {
+        color: #90949c;
+    }
+    
+    .btn-login {
+        width: 100%;
+        padding: 14px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: white;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 8px;
+        box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+    }
+    
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102,126,234,0.5);
+    }
+    
+    .divider {
+        display: flex;
+        align-items: center;
+        margin: 20px 0;
+    }
+    
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #e4e6eb;
+    }
+    
+    .divider span {
+        padding: 0 12px;
+        color: #606770;
+        font-size: 0.875rem;
+    }
+    
+    .btn-create {
+        width: 100%;
+        padding: 14px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: white;
+        background: linear-gradient(135deg, #42b72a 0%, #36a420 100%);
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(66,183,42,0.4);
+    }
+    
+    .btn-create:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(66,183,42,0.5);
+    }
+    
+    .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        font-size: 0.875rem;
+    }
+    
+    .alert-error {
+        background: #ffebee;
+        color: #c62828;
+        border: 1px solid #ef9a9a;
+    }
+    
+    .alert-success {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid #a5d6a7;
+    }
+    
+    .alert-info {
+        background: #e3f2fd;
+        color: #1565c0;
+        border: 1px solid #90caf9;
+    }
+    
+    .forgot-link {
+        display: block;
+        text-align: center;
+        margin-top: 16px;
+        color: #667eea;
+        font-size: 0.875rem;
+        text-decoration: none;
+    }
+    
+    .forgot-link:hover {
+        text-decoration: underline;
+    }
+    
+    @media (max-width: 1024px) {
+        .login-container {
+            max-width: 800px;
+            gap: 40px;
+        }
+        
+        .login-branding h1 {
+            font-size: 2.4rem;
+        }
+        
+        .login-branding p {
+            font-size: 1.1rem;
+        }
+        
+        .login-card {
+            width: 380px;
+            padding: 28px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .login-page {
+            padding: 16px;
+        }
+        
+        .login-container {
+            flex-direction: column;
+            gap: 32px;
+            max-width: 450px;
+        }
+        
+        .login-branding {
+            text-align: center;
+            padding: 10px;
+        }
+        
+        .login-branding h1 {
+            font-size: 1.8rem;
+        }
+        
+        .login-branding p {
+            font-size: 0.95rem;
+        }
+        
+        .brand-icon {
+            margin: 0 auto 20px auto;
+            width: 70px;
+            height: 70px;
+        }
+        
+        .brand-icon svg {
+            width: 40px;
+            height: 40px;
+        }
+        
+        .login-card {
+            width: 100%;
+            padding: 24px;
+        }
+        
+        .login-card h2 {
+            font-size: 1.4rem;
+        }
+        
+        .input-wrapper input {
+            padding: 12px 14px 12px 44px;
+            font-size: 0.95rem;
+        }
+        
+        .btn-login, .btn-create {
+            padding: 12px;
+            font-size: 1rem;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .login-page {
+            padding: 12px;
+        }
+        
+        .login-container {
+            gap: 24px;
+        }
+        
+        .login-branding h1 {
+            font-size: 1.5rem;
+        }
+        
+        .login-branding p {
+            font-size: 0.85rem;
+        }
+        
+        .brand-icon {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 16px;
+        }
+        
+        .brand-icon svg {
+            width: 32px;
+            height: 32px;
+        }
+        
+        .login-card {
+            padding: 20px;
+            border-radius: 12px;
+        }
+        
+        .login-card h2 {
+            font-size: 1.3rem;
+        }
+        
+        .login-subtitle {
+            font-size: 0.85rem;
+        }
+        
+        .form-group {
+            margin-bottom: 14px;
+        }
+        
+        .form-group label {
+            font-size: 0.8rem;
+        }
+        
+        .input-wrapper input {
+            padding: 10px 12px 10px 40px;
+            font-size: 0.9rem;
+        }
+        
+        .input-wrapper svg {
+            width: 18px;
+            height: 18px;
+            left: 12px;
+        }
+        
+        .btn-login {
+            padding: 11px;
+            font-size: 0.95rem;
+        }
+        
+        .btn-create {
+            padding: 11px;
+            font-size: 0.9rem;
+        }
+        
+        .forgot-link {
+            font-size: 0.8rem;
+        }
+        
+        .divider {
+            margin: 16px 0;
+        }
+    }
+</style>
+
+<div class="login-page">
+    <div class="login-container">
+        <div class="login-branding">
+            <div class="brand-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95.49-7.4-2.96-6.91-6.91.24-1.94 1.35-3.68 2.96-4.86l1.47 1.47c-1.16.84-1.96 2.15-2.16 3.64-.34 2.51 1.68 4.53 4.19 4.19 1.49-.2 2.8-1 3.64-2.16l1.47 1.47c-1.18 1.61-2.92 2.72-4.86 2.96zM12 6c-1.31 0-2.52.53-3.39 1.39l1.47 1.47C10.57 8.33 11.25 8 12 8c1.66 0 3 1.34 3 3 0 .75-.33 1.43-.86 1.93l1.47 1.47C16.47 13.52 17 12.31 17 11c0-2.76-2.24-5-5-5z"/>
+                </svg>
+            </div>
+            <h1>Interactive Mathematics Visualization Tools</h1>
+            <p>Explore mathematical concepts through dynamic visualizations and interactive simulations.</p>
+        </div>
+        
+        <div class="login-card">
+            <h2>Welcome Back</h2>
+            <p class="login-subtitle">Sign in to continue exploring</p>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            {% if form.non_field_errors %}
+                <div class="alert alert-error">
+                    {{ form.non_field_errors.0 }}
+                </div>
+            {% endif %}
+            
+            <form method="POST" action="{% url 'login' %}">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="{{ form.username.id_for_label }}">Username</label>
+                    <div class="input-wrapper">
+                        {{ form.username }}
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                    </div>
+                    {% if form.username.errors %}
+                        <div class="alert-error" style="padding: 8px 12px; margin-top: 8px; font-size: 0.8rem;">
+                            {{ form.username.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.password.id_for_label }}">Password</label>
+                    <div class="input-wrapper">
+                        {{ form.password }}
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                        </svg>
+                    </div>
+                    {% if form.password.errors %}
+                        <div class="alert-error" style="padding: 8px 12px; margin-top: 8px; font-size: 0.8rem;">
+                            {{ form.password.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn-login">Sign In</button>
+                
+                <a href="#" class="forgot-link">Forgot password?</a>
+                
+                <div class="divider">
+                    <span>or</span>
+                </div>
+                
+                <a href="{% url 'signup' %}" class="btn-create">Create New Account</a>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help & Support - MathViz</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+</head>
+<body>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { min-height: 100vh; }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .header-left { display: flex; align-items: center; gap: 16px; }
+    .menu-btn { background: rgba(255,255,255,0.2); border: none; border-radius: 8px; padding: 8px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
+    .menu-btn:hover { background: rgba(255,255,255,0.3); }
+    .menu-btn span { display: block; width: 20px; height: 2px; background: white; border-radius: 2px; }
+    .header-title { color: white; font-size: 1.4rem; font-weight: 600; text-decoration: none; }
+    .header-center { flex: 1; max-width: 500px; margin: 0 24px; }
+    .search-container { position: relative; }
+    .search-input { width: 100%; padding: 10px 16px 10px 40px; border: none; border-radius: 24px; background: rgba(255,255,255,0.2); color: white; font-size: 0.95rem; }
+    .search-input::placeholder { color: rgba(255,255,255,0.7); }
+    .search-input:focus { outline: none; background: rgba(255,255,255,0.3); }
+    .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; fill: rgba(255,255,255,0.7); }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .notification-btn { background: rgba(255,255,255,0.2); border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
+    .notification-btn:hover { background: rgba(255,255,255,0.3); }
+    .notification-btn svg { width: 20px; height: 20px; fill: white; }
+    .notification-badge { position: absolute; top: -2px; right: -2px; background: #ff4757; color: white; font-size: 0.65rem; font-weight: 600; padding: 2px 6px; border-radius: 10px; }
+    .account-dropdown { position: relative; }
+    .account-btn { background: rgba(255,255,255,0.2); border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; font-weight: 600; font-size: 1rem; }
+    .account-btn:hover { background: rgba(255,255,255,0.3); }
+    .dropdown-menu { position: absolute; top: 50px; right: 0; background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); min-width: 220px; display: none; overflow: hidden; }
+    .dropdown-menu.active { display: block; }
+    .dropdown-header { padding: 16px; border-bottom: 1px solid #e4e6eb; }
+    .dropdown-header h4 { font-size: 1rem; color: #1c1e21; margin: 0 0 4px 0; }
+    .dropdown-header p { font-size: 0.85rem; color: #606770; margin: 0; }
+    .dropdown-item { padding: 12px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; text-decoration: none; color: #1c1e21; }
+    .dropdown-item:hover { background: #f5f6f7; }
+    .dropdown-item svg { width: 20px; height: 20px; fill: #606770; }
+    .dropdown-item span { font-size: 0.9rem; }
+    .dropdown-divider { height: 1px; background: #e4e6eb; }
+    .sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100vh; background: white; box-shadow: 4px 0 20px rgba(0,0,0,0.1); transition: left 0.3s ease; z-index: 200; overflow-y: auto; }
+    .sidebar.active { left: 0; }
+    .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); opacity: 0; visibility: hidden; transition: all 0.3s; z-index: 199; }
+    .sidebar-overlay.active { opacity: 1; visibility: visible; }
+    .sidebar-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 24px; color: white; }
+    .sidebar-header h2 { font-size: 1.3rem; margin: 0 0 4px 0; }
+    .sidebar-header p { font-size: 0.85rem; opacity: 0.9; margin: 0; }
+    .sidebar-nav { padding: 16px 0; }
+    .sidebar-section { padding: 0 16px; margin-bottom: 16px; }
+    .sidebar-section-title { font-size: 0.75rem; font-weight: 600; color: #606770; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; padding: 0 8px; }
+    .sidebar-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; cursor: pointer; text-decoration: none; color: #1c1e21; }
+    .sidebar-item:hover { background: #f0f2ff; }
+    .sidebar-item.active { background: #e3e6ff; color: #667eea; }
+    .sidebar-item svg { width: 22px; height: 22px; fill: currentColor; }
+    .sidebar-item span { font-size: 0.95rem; font-weight: 500; }
+    .main-content { padding: 24px; max-width: 900px; margin: 0 auto; }
+    .page-header { text-align: center; margin-bottom: 32px; }
+    .page-header h2 { font-size: 1.8rem; color: #1c1e21; margin: 0 0 8px 0; }
+    .page-header p { color: #606770; margin: 0; }
+    .contact-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .contact-card { background: white; border-radius: 12px; padding: 24px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s; }
+    .contact-card:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+    .contact-icon { width: 50px; height: 50px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; }
+    .contact-icon svg { width: 24px; height: 24px; fill: white; }
+    .contact-card h4 { font-size: 1rem; color: #1c1e21; margin: 0 0 4px 0; }
+    .contact-card p { font-size: 0.85rem; color: #606770; margin: 0; }
+    .faq-section { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .faq-section h3 { font-size: 1.3rem; color: #1c1e21; margin: 0 0 20px 0; padding-bottom: 12px; border-bottom: 1px solid #e4e6eb; }
+    .faq-item { border-bottom: 1px solid #f0f2f5; padding: 16px 0; }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-question { font-size: 1rem; font-weight: 600; color: #1c1e21; margin: 0 0 8px 0; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+    .faq-question::after { content: '+'; font-size: 1.5rem; color: #667eea; transition: transform 0.3s; }
+    .faq-item.active .faq-question::after { content: '−'; }
+    .faq-answer { font-size: 0.9rem; color: #606770; line-height: 1.6; margin: 0; max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+    .faq-item.active .faq-answer { max-height: 200px; }
+    .support-form { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-top: 24px; }
+    .support-form h3 { font-size: 1.3rem; color: #1c1e21; margin: 0 0 20px 0; padding-bottom: 12px; border-bottom: 1px solid #e4e6eb; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 0.875rem; font-weight: 500; color: #606770; margin-bottom: 8px; }
+    .form-control { width: 100%; padding: 12px 16px; border: 2px solid #e4e6eb; border-radius: 10px; font-size: 0.95rem; transition: all 0.2s; font-family: inherit; }
+    .form-control:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 4px rgba(102,126,234,0.15); }
+    textarea.form-control { min-height: 120px; resize: vertical; }
+    .btn-submit { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 32px; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.5); }
+    @media (max-width: 1024px) {
+        .main-content {
+            max-width: 800px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .header { flex-wrap: wrap; gap: 12px; padding: 12px 16px; }
+        .header-center { order: 3; flex-basis: 100%; margin: 0; }
+        .header-title { font-size: 1rem; }
+        .header-right { gap: 8px; }
+        .notification-btn, .account-btn { width: 36px; height: 36px; }
+        
+        .main-content { padding: 16px; }
+        
+        .page-header h2 { font-size: 1.5rem; }
+        .page-header p { font-size: 0.9rem; }
+        
+        .contact-cards { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        
+        .faq-section { padding: 20px; }
+        .faq-section h3 { font-size: 1.1rem; }
+        
+        .support-form { padding: 20px; }
+        .support-form h3 { font-size: 1.1rem; }
+        
+        .sidebar { width: 260px; left: -260px; }
+    }
+    
+    @media (max-width: 480px) {
+        .header { padding: 10px 12px; }
+        .header-title { font-size: 0.85rem; }
+        .menu-btn { padding: 6px; }
+        .menu-btn span { width: 18px; height: 2px; }
+        .search-input { padding: 8px 14px 8px 36px; font-size: 0.85rem; }
+        .search-icon { width: 16px; height: 16px; left: 12px; }
+        .notification-btn, .account-btn { width: 32px; height: 32px; }
+        .notification-badge { font-size: 0.6rem; padding: 1px 4px; }
+        
+        .main-content { padding: 12px; }
+        
+        .page-header { margin-bottom: 20px; }
+        .page-header h2 { font-size: 1.3rem; }
+        .page-header p { font-size: 0.85rem; }
+        
+        .contact-cards { grid-template-columns: 1fr; gap: 10px; }
+        .contact-card { padding: 16px; }
+        .contact-icon { width: 45px; height: 45px; }
+        .contact-icon svg { width: 20px; height: 20px; }
+        .contact-card h4 { font-size: 0.9rem; }
+        .contact-card p { font-size: 0.8rem; }
+        
+        .faq-section { padding: 16px; border-radius: 12px; }
+        .faq-section h3 { font-size: 1rem; margin-bottom: 16px; }
+        .faq-question { font-size: 0.9rem; }
+        .faq-answer { font-size: 0.85rem; }
+        
+        .support-form { padding: 16px; border-radius: 12px; }
+        .support-form h3 { font-size: 1rem; margin-bottom: 16px; }
+        
+        .form-group label { font-size: 0.8rem; }
+        .form-control { padding: 10px 14px; font-size: 0.9rem; }
+        textarea.form-control { min-height: 100px; }
+        
+        .btn-submit { padding: 10px 24px; font-size: 0.9rem; width: 100%; }
+        
+        .dropdown-menu { min-width: 180px; }
+        .dropdown-header { padding: 12px; }
+        .dropdown-header h4 { font-size: 0.9rem; }
+        .dropdown-header p { font-size: 0.75rem; }
+        .dropdown-item { padding: 10px 12px; }
+        .dropdown-item span { font-size: 0.85rem; }
+    }
+</style>
+
+<div class="header">
+    <div class="header-left">
+        <button class="menu-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+        <a href="{% url 'home' %}" class="header-title">Interactive Mathematics Visualization Tools</a>
+    </div>
+    <div class="header-center">
+        <div class="search-container">
+            <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input type="text" class="search-input" placeholder="Search tools, concepts, lessons...">
+        </div>
+    </div>
+    <div class="header-right">
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+            <svg class="moon-icon" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+            <svg class="sun-icon" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>
+        </button>
+        <button class="notification-btn"><svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg><span class="notification-badge">3</span></button>
+        <div class="account-dropdown">
+            <button class="account-btn" onclick="toggleDropdown()">{{ user.username|first|upper }}</button>
+            <div class="dropdown-menu" id="dropdownMenu">
+                <div class="dropdown-header"><h4>{{ user.username }}</h4><p>{{ user.email }}</p></div>
+                <a href="{% url 'profile' %}" class="dropdown-item"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><span>My Profile</span></a>
+                <a href="{% url 'settings' %}" class="dropdown-item"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg><span>Settings</span></a>
+                <div class="dropdown-divider"></div>
+                <a href="{% url 'logout' %}" class="dropdown-item"><svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg><span>Logout</span></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header"><h2>MathViz</h2><p>Explore Mathematics</p></div>
+    <nav class="sidebar-nav">
+        <div class="sidebar-section"><div class="sidebar-section-title">Main</div>
+            <a href="{% url 'home' %}" class="sidebar-item"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Dashboard</span></a>
+            <a href="#" class="sidebar-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95.49-7.4-2.96-6.91-6.91.24-1.94 1.35-3.68 2.96-4.86l1.47 1.47c-1.16.84-1.96 2.15-2.16 3.64-.34 2.51 1.68 4.53 4.19 4.19 1.49-.2 2.8-1 3.64-2.16l1.47 1.47c-1.18 1.61-2.92 2.72-4.86 2.96zM12 6c-1.31 0-2.52.53-3.39 1.39l1.47 1.47C10.57 8.33 11.25 8 12 8c1.66 0 3 1.34 3 3 0 .75-.33 1.43-.86 1.93l1.47 1.47C16.47 13.52 17 12.31 17 11c0-2.76-2.24-5-5-5z"/></svg><span>Graphing Tools</span></a>
+            <a href="#" class="sidebar-item"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg><span>Statistics</span></a>
+            <a href="#" class="sidebar-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg><span>Geometry</span></a>
+        </div>
+        <div class="sidebar-section"><div class="sidebar-section-title">Learning</div>
+            <a href="{% url 'lessons' %}" class="sidebar-item"><svg viewBox="0 0 24 24"><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg><span>Lessons</span></a>
+            <a href="#" class="sidebar-item"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg><span>My Courses</span></a>
+            <a href="#" class="sidebar-item"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg><span>Community</span></a>
+        </div>
+        <div class="sidebar-section"><div class="sidebar-section-title">Account</div>
+            <a href="{% url 'profile' %}" class="sidebar-item"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><span>Profile</span></a>
+            <a href="{% url 'settings' %}" class="sidebar-item"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg><span>Settings</span></a>
+            <a href="{% url 'help' %}" class="sidebar-item active"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg><span>Help & Support</span></a>
+            <a href="{% url 'logout' %}" class="sidebar-item"><svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg><span>Logout</span></a>
+        </div>
+    </nav>
+</div>
+
+<div class="main-content">
+    <div class="page-header">
+        <h2>Help & Support</h2>
+        <p>Find answers to common questions or contact our support team</p>
+    </div>
+
+    <div class="contact-cards">
+        <div class="contact-card">
+            <div class="contact-icon">
+                <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            </div>
+            <h4>Email Support</h4>
+            <p>support@mathviz.com</p>
+        </div>
+        <div class="contact-card">
+            <div class="contact-icon">
+                <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+            </div>
+            <h4>Phone Support</h4>
+            <p>+1 (555) 123-4567</p>
+        </div>
+        <div class="contact-card">
+            <div class="contact-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            </div>
+            <h4>Live Chat</h4>
+            <p>Available 24/7</p>
+        </div>
+    </div>
+
+    <div class="faq-section">
+        <h3>Frequently Asked Questions</h3>
+        {% for faq in faqs %}
+        <div class="faq-item" onclick="this.classList.toggle('active')">
+            <p class="faq-question">{{ faq.question }}</p>
+            <p class="faq-answer">{{ faq.answer }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="support-form">
+        <h3>Send us a Message</h3>
+        <form>
+            <div class="form-group"><label>Subject</label><input type="text" class="form-control" placeholder="What is your issue about?"></div>
+            <div class="form-group"><label>Message</label><textarea class="form-control" placeholder="Describe your issue in detail..."></textarea></div>
+            <button type="submit" class="btn-submit">Send Message</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.querySelector('.sidebar-overlay').classList.toggle('active'); }
+    function toggleDropdown() { document.getElementById('dropdownMenu').classList.toggle('active'); }
+    function toggleTheme() { const html = document.documentElement; const currentTheme = html.getAttribute('data-theme'); const newTheme = currentTheme === 'dark' ? 'light' : 'dark'; html.setAttribute('data-theme', newTheme); localStorage.setItem('theme', newTheme); }
+    (function() { const savedTheme = localStorage.getItem('theme') || 'light'; document.documentElement.setAttribute('data-theme', savedTheme); })();
+    document.addEventListener('click', function(e) { const dropdown = document.getElementById('dropdownMenu'); const accountBtn = document.querySelector('.account-btn'); if (!dropdown.contains(e.target) && !accountBtn.contains(e.target)) { dropdown.classList.remove('active'); } });
+</script>
+</body>
+</html>
