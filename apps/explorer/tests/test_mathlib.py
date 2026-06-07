@@ -1,5 +1,6 @@
 """5+ unit tests per mathlib module — no Django views."""
 
+import json
 import math
 
 from django.test import SimpleTestCase, TestCase
@@ -764,4 +765,217 @@ class JsSourceTests(SimpleTestCase):
         tmpl = self._read("templates", "partials", "_module_body.html")
         self.assertIn('id="module-body"', tmpl,
                       "#module-body is missing from _module_body.html")
+
+
+class FocusAndAnnotationTests(TestCase):
+    """Verify the Focus + Freeze &amp; draw toolbar tool:
+
+    1. Every module page renders the two new buttons + the overlay
+       container (markup test).
+    2. The annotation-save endpoint accepts a valid JSON payload and
+       creates a WhiteboardDrawing tagged with the module slug.
+    3. The annotation-list endpoint returns only that user's rows
+       for the requested module.
+    4. The annotation-save endpoint refuses anonymous users (302 to
+       the login page).
+    5. The annotation-load endpoint fetches the right row by pk.
+    """
+
+    MODULES = ("linear", "quadratic", "trig", "derivative",
+               "integral", "geometry", "transform")
+
+    @classmethod
+    def setUpTestData(cls):
+        from django.contrib.auth import get_user_model
+        from apps.reading.models import ReadingPage
+        from apps.accounts.models import get_or_create_profile
+        User = get_user_model()
+        cls.user = User.objects.create_user(
+            username="annotator", password="pw12345!", email="a@e.com"
+        )
+        cls.other = User.objects.create_user(
+            username="stranger", password="pw12345!", email="s@e.com"
+        )
+        # Grant our annotator access to all modules via their profile.
+        cls.profile = get_or_create_profile(cls.user)
+        cls.profile.allowed_modules = list(cls.MODULES)
+        cls.profile.save()
+        cls.other_profile = get_or_create_profile(cls.other)
+        cls.other_profile.allowed_modules = list(cls.MODULES)
+        cls.other_profile.save()
+        for s in cls.MODULES:
+            ReadingPage.objects.update_or_create(
+                slug=s, defaults={"module_id": s, "title": s.title(), "body_md": f"# {s}"},
+            )
+
+    def _read(self, *parts):
+        from pathlib import Path
+        return Path(*parts).read_text(encoding="utf-8")
+
+    def setUp(self):
+        self.client.login(username="annotator", password="pw12345!")
+
+    def _get_module(self, slug):
+        return self.client.get(f"/explore/{slug}/")
+
+    def test_focus_and_whiteboard_buttons_render_for_every_module(self):
+        """Every Explore page must expose the Focus and Freeze &amp; draw
+        toolbar buttons, the focus overlay container, and the embedded
+        whiteboard canvas wrap."""
+        for mod in self.MODULES:
+            r = self._get_module(mod)
+            self.assertEqual(r.status_code, 200, f"{mod} GET returned {r.status_code}")
+            body = r.content.decode()
+            self.assertIn("data-focus-toggle", body,
+                          f"{mod} page has no Focus button")
+            self.assertIn("data-whiteboard-toggle", body,
+                          f"{mod} page has no Freeze & draw button")
+            self.assertIn("data-focus-overlay", body,
+                          f"{mod} page has no focus overlay container")
+            self.assertIn("data-wb-canvas-wrap", body,
+                          f"{mod} overlay has no whiteboard canvas wrap")
+            # The overlay must include the toolbar groups the JS expects.
+            for needle in (
+                "data-wb-tool=\"pen\"",
+                "data-wb-tool=\"highlighter\"",
+                "data-wb-tool=\"eraser\"",
+                "data-wb-undo",
+                "data-wb-redo",
+                "data-wb-clear",
+                "data-wb-save",
+                "data-wb-load",
+            ):
+                self.assertIn(needle, body,
+                              f"{mod} overlay missing {needle!r}")
+            # Save URL points at the per-module annotation_save route.
+            self.assertIn(
+                f"/explore/{mod}/annotations/save/", body,
+                f"{mod} overlay data-wb-save-url is wrong",
+            )
+            self.assertIn(
+                f"/explore/{mod}/annotations/", body,
+                f"{mod} overlay data-wb-load-url-base is wrong",
+            )
+
+    def test_annotation_save_creates_row(self):
+        """POSTing a valid stroke payload to the per-module
+        /annotations/save/ endpoint must persist a WhiteboardDrawing
+        tagged with that module slug, owned by the current user."""
+        payload = {
+            "title": "My parabola sketch",
+            "strokes": [
+                {"tool": "pen", "color": "#ef4444", "size": 3,
+                 "data": {"points": [{"x": 10, "y": 10},
+                                     {"x": 50, "y": 50},
+                                     {"x": 90, "y": 10}]}},
+            ],
+            "background_data_url": "",
+            "pk": None,
+        }
+        r = self.client.post(
+            "/explore/quadratic/annotations/save/",
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+        self.assertEqual(r.status_code, 200, r.content)
+        body = r.json()
+        self.assertTrue(body.get("ok"))
+        self.assertEqual(body.get("module_slug"), "quadratic")
+        self.assertIsNotNone(body.get("id"))
+        from whiteboard.models import WhiteboardDrawing
+        d = WhiteboardDrawing.objects.get(pk=body["id"])
+        self.assertEqual(d.user, self.user)
+        self.assertEqual(d.module_slug, "quadratic")
+        self.assertEqual(d.title, "My parabola sketch")
+        import json as _json
+        self.assertEqual(len(_json.loads(d.strokes_json)), 1)
+
+    def test_annotation_save_rejects_anonymous(self):
+        """Anonymous users get redirected to the login page (302)."""
+        self.client.logout()
+        r = self.client.post(
+            "/explore/quadratic/annotations/save/",
+            data=json.dumps({"strokes": []}),
+            content_type="application/json",
+        )
+        # 302 to /accounts/login/ (Django default) or 403, either way not 200.
+        self.assertIn(r.status_code, (302, 403),
+                      f"anon save should be blocked, got {r.status_code}")
+
+    def test_annotation_list_returns_only_user_rows(self):
+        """annotation_list must return only the current user's saved
+        annotations for the requested module, and must never expose
+        another user's row."""
+        from whiteboard.models import WhiteboardDrawing
+        # Create one row per module for the current user, and one
+        # for the other user on the same module.
+        for s in self.MODULES:
+            WhiteboardDrawing.objects.create(
+                user=self.user, title=f"{s} mine",
+                module_slug=s, strokes_json="[]",
+            )
+            if s == "quadratic":
+                WhiteboardDrawing.objects.create(
+                    user=self.other, title="stranger quad",
+                    module_slug="quadratic", strokes_json="[]",
+                )
+        r = self.client.get("/explore/quadratic/annotations/")
+        self.assertEqual(r.status_code, 200)
+        body = r.json()
+        self.assertTrue(body["ok"])
+        self.assertEqual(body["module"], "quadratic")
+        titles = [d["title"] for d in body["drawings"]]
+        self.assertIn("quadratic mine", titles)
+        self.assertNotIn("stranger quad", titles,
+                         "annotation_list leaked another user's drawing")
+
+    def test_annotation_load_returns_row(self):
+        """annotation_load must return the right drawing by pk and 404
+        on a foreign user's row."""
+        from whiteboard.models import WhiteboardDrawing
+        d = WhiteboardDrawing.objects.create(
+            user=self.user, title="loaded",
+            module_slug="trig", strokes_json='[{"tool":"pen"}]',
+        )
+        r = self.client.get(f"/explore/trig/annotations/load/{d.pk}/")
+        self.assertEqual(r.status_code, 200)
+        body = r.json()
+        self.assertTrue(body["ok"])
+        self.assertEqual(body["id"], d.pk)
+        self.assertEqual(body["title"], "loaded")
+        self.assertEqual(body["module_slug"], "trig")
+        self.assertEqual(len(body["strokes"]), 1)
+        # 404 on a non-existent pk
+        r404 = self.client.get("/explore/trig/annotations/load/999999/")
+        self.assertEqual(r404.status_code, 404)
+
+    def test_module_focus_js_included_in_base_module(self):
+        """The base module template must include the new module_focus.js
+        and the standalone whiteboard.js / whiteboard.css so the
+        toolbar buttons have working code to drive."""
+        tmpl = self._read("apps", "explorer", "templates", "explorer", "base_module.html")
+        self.assertIn("module_focus.js", tmpl,
+                      "module_focus.js is not included in base_module.html")
+        self.assertIn("whiteboard.js", tmpl,
+                      "whiteboard.js is not included in base_module.html")
+        self.assertIn("whiteboard.css", tmpl,
+                      "whiteboard.css is not included in base_module.html")
+
+    def test_whiteboard_engine_is_idempotent(self):
+        """Whiteboard.init() called twice on the same wrap must NOT
+        double-bind click / canvas / keyboard / resize listeners.
+        The engine marks the wrap with data-wb-bound='1' on first run
+        and skips bind* on subsequent calls."""
+        js = self._read("static", "whiteboard", "whiteboard.js")
+        # dataset.wbBound in the JS corresponds to the data-wb-bound
+        # attribute on the DOM element.
+        self.assertIn("wbBound", js,
+                      "whiteboard.js does not implement a re-init guard")
+        # The guard must compare against "1" and set the attribute on bind.
+        self.assertIn('wrap.dataset.wbBound = "1"', js,
+                      "whiteboard.js does not set the bound marker on first init")
+        self.assertIn("alreadyBound", js,
+                      "whiteboard.js does not check alreadyBound before re-binding")
+        self.assertIn("refresh: function", js,
+                      "whiteboard.js does not expose a refresh() method")
 

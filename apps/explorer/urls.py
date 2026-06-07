@@ -31,4 +31,11 @@ urlpatterns = [
     path("integral/snapshot/",   views.integral_snapshot,   name="integral_snapshot"),
     path("geometry/snapshot/",   views.geometry_snapshot,   name="geometry_snapshot"),
     path("transform/snapshot/",  views.transform_snapshot,  name="transform_snapshot"),
+    # Module-annotation routes (frozen-diagram whiteboard). One set per module
+    # so the URL path is informative and the save endpoint can be reused by
+    # the existing whiteboard.js whiteboard.save() consumer.
+    path("<str:module>/annotations/",                views.annotation_list,   name="annotation_list"),
+    path("<str:module>/annotations/save/",           views.annotation_save,   name="annotation_save"),
+    path("<str:module>/annotations/load/<int:pk>/",  views.annotation_load,   name="annotation_load"),
+    path("<str:module>/annotations/delete/<int:pk>/",views.annotation_delete, name="annotation_delete"),
 ]
