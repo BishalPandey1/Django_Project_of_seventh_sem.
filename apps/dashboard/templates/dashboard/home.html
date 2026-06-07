@@ -3,279 +3,904 @@
 
 {% block app_title %}Dashboard · MathViz{% endblock %}
 
+{% block extra_head %}
+<style>
+    /* ─── Dashboard-only polish ─────────────────────────────────────── */
+
+    .dash-hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: 1.25rem;
+        padding: 2rem 2rem 1.75rem;
+        background:
+            radial-gradient(at 20% 0%,  rgba(99,102,241,0.18) 0px, transparent 50%),
+            radial-gradient(at 80% 100%, rgba(236,72,153,0.15) 0px, transparent 50%),
+            linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(168,85,247,0.06) 100%);
+        border: 1px solid rgba(99,102,241,0.18);
+        box-shadow: 0 8px 30px rgba(99,102,241,0.08);
+    }
+    .dark .dash-hero {
+        background:
+            radial-gradient(at 20% 0%,  rgba(99,102,241,0.30) 0px, transparent 50%),
+            radial-gradient(at 80% 100%, rgba(236,72,153,0.22) 0px, transparent 50%),
+            linear-gradient(135deg, rgba(15,23,42,0.55) 0%, rgba(15,23,42,0.65) 100%);
+        border-color: rgba(99,102,241,0.28);
+    }
+    .dash-hero::after {
+        content: "";
+        position: absolute;
+        inset: auto -5% -40% auto;
+        width: 360px;
+        height: 360px;
+        background: radial-gradient(circle, rgba(168,85,247,0.30) 0%, transparent 60%);
+        filter: blur(40px);
+        pointer-events: none;
+    }
+    .dash-hero::before {
+        content: "";
+        position: absolute;
+        inset: -30% auto auto -5%;
+        width: 280px;
+        height: 280px;
+        background: radial-gradient(circle, rgba(99,102,241,0.30) 0%, transparent 60%);
+        filter: blur(40px);
+        pointer-events: none;
+    }
+
+    .dash-avatar {
+        width: 64px; height: 64px;
+        border-radius: 1.25rem;
+        display: grid; place-items: center;
+        font-size: 1.5rem; font-weight: 700;
+        color: #fff;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 60%, #ec4899 100%);
+        box-shadow: 0 10px 24px rgba(99,102,241,0.35), inset 0 0 0 1px rgba(255,255,255,0.25);
+        flex-shrink: 0;
+    }
+
+    /* Quick action tiles */
+    .qa-tile {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 18px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.62);
+        backdrop-filter: blur(14px) saturate(160%);
+        -webkit-backdrop-filter: blur(14px) saturate(160%);
+        border: 1px solid rgba(15,23,42,0.10);
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        overflow: hidden;
+    }
+    .qa-tile::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 3px;
+        background: var(--qa-accent, #6366f1);
+        opacity: 0.85;
+    }
+    .qa-tile:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(15,23,42,0.10);
+        border-color: color-mix(in srgb, var(--qa-accent, #6366f1) 40%, transparent);
+    }
+    .dark .qa-tile {
+        background: rgba(15,23,42,0.55);
+        border-color: rgba(148,163,184,0.18);
+    }
+    .dark .qa-tile:hover {
+        box-shadow: 0 10px 24px rgba(0,0,0,0.40);
+    }
+    .qa-icon {
+        width: 44px; height: 44px;
+        flex-shrink: 0;
+        border-radius: 12px;
+        display: grid; place-items: center;
+        color: #fff;
+        background: linear-gradient(135deg,
+            color-mix(in srgb, var(--qa-accent, #6366f1) 90%, white 0%),
+            color-mix(in srgb, var(--qa-accent, #6366f1) 60%, #1e1b4b 0%));
+        box-shadow: 0 4px 10px color-mix(in srgb, var(--qa-accent, #6366f1) 30%, transparent);
+    }
+    .qa-text { min-width: 0; flex: 1; }
+    .qa-title { font-size: 14px; font-weight: 700; color: hsl(var(--foreground)); line-height: 1.2; }
+    .qa-desc  { font-size: 12px; color: hsl(var(--muted-foreground)); margin-top: 2px; line-height: 1.3; }
+    .qa-arrow {
+        flex-shrink: 0;
+        width: 28px; height: 28px;
+        display: grid; place-items: center;
+        border-radius: 9999px;
+        background: color-mix(in srgb, var(--qa-accent, #6366f1) 12%, transparent);
+        color: var(--qa-accent, #6366f1);
+        transition: transform 0.18s ease;
+    }
+    .qa-tile:hover .qa-arrow { transform: translateX(3px); }
+
+    /* Section header */
+    .sec-head {
+        display: flex; align-items: flex-end; justify-content: space-between;
+        gap: 12px; margin-bottom: 12px;
+    }
+    .sec-eyebrow {
+        font-size: 10px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.10em; color: hsl(var(--muted-foreground));
+    }
+    .sec-title {
+        font-size: 18px; font-weight: 700; color: hsl(var(--foreground));
+        line-height: 1.2; margin-top: 2px;
+    }
+    .sec-sub {
+        font-size: 12px; color: hsl(var(--muted-foreground)); margin-top: 2px;
+    }
+
+    /* Stats card */
+    .stat-block {
+        position: relative;
+        padding: 18px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.65);
+        backdrop-filter: blur(14px) saturate(160%);
+        border: 1px solid rgba(15,23,42,0.10);
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .stat-block:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(15,23,42,0.10);
+    }
+    .dark .stat-block { background: rgba(15,23,42,0.55); border-color: rgba(148,163,184,0.18); }
+    .stat-icon {
+        width: 38px; height: 38px;
+        border-radius: 10px;
+        display: grid; place-items: center;
+        color: #fff;
+        background: linear-gradient(135deg,
+            color-mix(in srgb, var(--stat-accent, #6366f1) 90%, white 0%),
+            color-mix(in srgb, var(--stat-accent, #6366f1) 60%, #1e1b4b 0%));
+        box-shadow: 0 4px 10px color-mix(in srgb, var(--stat-accent, #6366f1) 30%, transparent);
+    }
+    .stat-num {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 26px; font-weight: 700; line-height: 1;
+        color: hsl(var(--foreground)); margin-top: 10px;
+    }
+    .stat-lbl { font-size: 11px; font-weight: 600; text-transform: uppercase;
+                letter-spacing: 0.06em; color: var(--stat-accent, #6366f1); margin-top: 4px; }
+    .stat-sub { font-size: 11px; color: hsl(var(--muted-foreground)); margin-top: 2px; }
+
+    /* Featured / continue card */
+    .featured-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 16px;
+        padding: 22px;
+        color: #fff;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+        box-shadow: 0 12px 28px rgba(99,102,241,0.30);
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .featured-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 32px rgba(99,102,241,0.40);
+    }
+    .featured-card::before {
+        content: "";
+        position: absolute;
+        inset: -50% -10% auto auto;
+        width: 320px; height: 320px;
+        background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, transparent 60%);
+        pointer-events: none;
+    }
+    .featured-card::after {
+        content: "";
+        position: absolute;
+        inset: auto auto -50% -10%;
+        width: 280px; height: 280px;
+        background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 60%);
+        pointer-events: none;
+    }
+
+    /* Module card */
+    .mod-card {
+        position: relative;
+        display: block;
+        padding: 16px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.65);
+        backdrop-filter: blur(14px) saturate(160%);
+        border: 1px solid rgba(15,23,42,0.10);
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        overflow: hidden;
+    }
+    .mod-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(15,23,42,0.10);
+        border-color: color-mix(in srgb, var(--mod-accent, #6366f1) 35%, transparent);
+    }
+    .dark .mod-card { background: rgba(15,23,42,0.55); border-color: rgba(148,163,184,0.18); }
+    .mod-glow {
+        position: absolute;
+        right: -40px; top: -40px;
+        width: 120px; height: 120px;
+        border-radius: 9999px;
+        background: var(--mod-glow, rgba(99,102,241,0.30));
+        filter: blur(28px);
+        opacity: 0.7;
+        transition: opacity 0.18s ease;
+    }
+    .mod-card:hover .mod-glow { opacity: 1; }
+    .mod-icon {
+        width: 38px; height: 38px;
+        border-radius: 10px;
+        display: grid; place-items: center;
+        color: #fff;
+        background: linear-gradient(135deg,
+            color-mix(in srgb, var(--mod-accent, #6366f1) 90%, white 0%),
+            color-mix(in srgb, var(--mod-accent, #6366f1) 60%, #1e1b4b 0%));
+        box-shadow: 0 4px 10px color-mix(in srgb, var(--mod-accent, #6366f1) 30%, transparent);
+        flex-shrink: 0;
+    }
+    .mod-title { font-size: 14px; font-weight: 700; color: hsl(var(--foreground)); }
+    .mod-meta  { font-size: 11px; color: hsl(var(--muted-foreground)); margin-top: 2px; }
+    .mod-formula {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 3px 8px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12px;
+        color: hsl(var(--foreground));
+        background: color-mix(in srgb, var(--mod-accent, #6366f1) 8%, transparent);
+        border-radius: 6px;
+    }
+
+    /* Progress block */
+    .prog-ring-wrap {
+        position: relative;
+        width: 132px; height: 132px;
+        flex-shrink: 0;
+    }
+    .prog-ring-text {
+        position: absolute; inset: 0;
+        display: grid; place-items: center;
+        flex-direction: column;
+    }
+    .prog-bar {
+        position: relative;
+        height: 10px;
+        border-radius: 9999px;
+        background: rgba(15,23,42,0.08);
+        overflow: hidden;
+    }
+    .dark .prog-bar { background: rgba(148,163,184,0.20); }
+    .prog-bar-fill {
+        position: absolute; inset: 0 auto 0 0;
+        background: linear-gradient(90deg, #6366f1, #8b5cf6, #10b981);
+        border-radius: 9999px;
+        transition: width 0.4s ease;
+    }
+
+    /* Task row */
+    .task-row {
+        display: flex; align-items: center; gap: 14px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.55);
+        border: 1px solid rgba(15,23,42,0.08);
+        transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .task-row:hover {
+        transform: translateX(2px);
+        border-color: rgba(99,102,241,0.40);
+    }
+    .dark .task-row { background: rgba(15,23,42,0.45); border-color: rgba(148,163,184,0.18); }
+    .task-icon {
+        width: 40px; height: 40px;
+        flex-shrink: 0;
+        border-radius: 10px;
+        display: grid; place-items: center;
+    }
+    .task-title { font-size: 14px; font-weight: 600; color: hsl(var(--foreground)); }
+    .task-meta  { font-size: 11px; color: hsl(var(--muted-foreground)); margin-top: 2px; }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 32px 16px;
+        border-radius: 14px;
+        background: rgba(15,23,42,0.03);
+        border: 1px dashed rgba(15,23,42,0.15);
+    }
+    .dark .empty-state { background: rgba(255,255,255,0.03); border-color: rgba(148,163,184,0.20); }
+
+    /* Reading list */
+    .reading-row {
+        display: flex; align-items: center; gap: 12px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        transition: background 0.15s ease;
+    }
+    .reading-row:hover { background: rgba(99,102,241,0.06); }
+    .dark .reading-row:hover { background: rgba(99,102,241,0.15); }
+
+    /* Activity row */
+    .act-row {
+        display: flex; align-items: center; gap: 12px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: rgba(255,255,255,0.45);
+        border: 1px solid rgba(15,23,42,0.06);
+    }
+    .dark .act-row { background: rgba(15,23,42,0.40); border-color: rgba(148,163,184,0.15); }
+
+    /* Board section base — match existing */
+    .dash-section {
+        position: relative;
+        background: rgba(255,255,255,0.62);
+        backdrop-filter: blur(14px) saturate(160%);
+        -webkit-backdrop-filter: blur(14px) saturate(160%);
+        border: 1px solid rgba(15,23,42,0.10);
+        border-radius: 16px;
+        box-shadow: 0 4px 14px rgba(15,23,42,0.05);
+        overflow: hidden;
+    }
+    .dark .dash-section { background: rgba(15,23,42,0.55); border-color: rgba(148,163,184,0.20); }
+    .dash-section::before {
+        content: "";
+        position: absolute; inset: 0 0 auto 0; height: 3px;
+        background: linear-gradient(90deg, var(--sec-accent, #6366f1), transparent 70%);
+    }
+    .dash-section-head {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 12px; padding: 16px 20px;
+        border-bottom: 1px solid rgba(15,23,42,0.08);
+    }
+    .dark .dash-section-head { border-bottom-color: rgba(148,163,184,0.15); }
+    .dash-section-body { padding: 20px; }
+
+    .section-badge {
+        display: grid; place-items: center;
+        width: 32px; height: 32px;
+        border-radius: 9px;
+        font-size: 13px; font-weight: 700;
+        color: var(--sec-accent, #6366f1);
+        background: color-mix(in srgb, var(--sec-accent, #6366f1) 12%, transparent);
+        border: 1px solid color-mix(in srgb, var(--sec-accent, #6366f1) 30%, transparent);
+        flex-shrink: 0;
+    }
+    .section-eyebrow {
+        font-size: 10px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.08em; color: var(--sec-accent, #6366f1);
+    }
+    .section-h {
+        font-size: 15px; font-weight: 700;
+        color: hsl(var(--foreground));
+        line-height: 1.25;
+    }
+    .link-btn {
+        display: inline-flex; align-items: center; gap: 4px;
+        font-size: 12px; font-weight: 600;
+        color: var(--sec-accent, #6366f1);
+        padding: 6px 10px;
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--sec-accent, #6366f1) 8%, transparent);
+        transition: background 0.15s ease;
+    }
+    .link-btn:hover { background: color-mix(in srgb, var(--sec-accent, #6366f1) 18%, transparent); }
+
+    /* ─── Reading room — "real book" styling ──────────────────────── */
+    .book-card {
+        position: relative;
+        display: block;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.70);
+        backdrop-filter: blur(14px) saturate(160%);
+        border: 1px solid rgba(15,23,42,0.10);
+        overflow: hidden;
+        padding-bottom: 14px;
+        transition: transform 0.20s ease, box-shadow 0.20s ease, border-color 0.20s ease;
+    }
+    .dark .book-card { background: rgba(15,23,42,0.55); border-color: rgba(148,163,184,0.20); }
+    .book-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 30px color-mix(in srgb, var(--book-accent, #6366f1) 18%, transparent);
+        border-color: color-mix(in srgb, var(--book-accent, #6366f1) 40%, transparent);
+    }
+    .book-accent {
+        position: absolute; inset: 0 0 auto 0; height: 3px;
+        background: linear-gradient(90deg,
+            var(--book-accent, #6366f1),
+            color-mix(in srgb, var(--book-accent, #6366f1) 30%, transparent));
+    }
+
+    .chapter-num {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.10em;
+        text-transform: uppercase;
+        color: var(--book-accent, #6366f1);
+    }
+    .chapter-dot {
+        color: hsl(var(--muted-foreground));
+        opacity: 0.6;
+    }
+    .reading-time {
+        display: inline-flex; align-items: center; gap: 4px;
+        font-size: 10px;
+        font-weight: 600;
+        color: hsl(var(--muted-foreground));
+    }
+    .module-pill {
+        display: inline-flex; align-items: center;
+        padding: 2px 8px;
+        font-size: 10px;
+        font-weight: 600;
+        border-radius: 9999px;
+        color: var(--book-accent, #6366f1);
+        background: color-mix(in srgb, var(--book-accent, #6366f1) 10%, transparent);
+        border: 1px solid color-mix(in srgb, var(--book-accent, #6366f1) 25%, transparent);
+        letter-spacing: 0.02em;
+    }
+
+    .book-title {
+        font-size: 22px;
+        line-height: 1.15;
+        font-weight: 700;
+        color: hsl(var(--foreground));
+        letter-spacing: -0.01em;
+    }
+    .book-excerpt {
+        margin-top: 8px;
+        font-size: 13px;
+        line-height: 1.55;
+        color: hsl(var(--muted-foreground));
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .book-ideas {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .book-ideas li {
+        display: flex; align-items: baseline; gap: 8px;
+        font-size: 11.5px;
+        line-height: 1.45;
+        color: hsl(var(--foreground));
+        opacity: 0.85;
+    }
+    .idea-dot {
+        flex-shrink: 0;
+        display: inline-block;
+        width: 5px; height: 5px;
+        border-radius: 9999px;
+        background: var(--book-accent, #6366f1);
+        margin-top: 5px;
+    }
+
+    .book-footer {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 12px;
+        padding: 12px 20px 4px;
+        margin-top: 8px;
+    }
+    .book-progress {
+        flex: 1;
+        height: 4px;
+        border-radius: 9999px;
+        background: rgba(15,23,42,0.08);
+        overflow: hidden;
+    }
+    .dark .book-progress { background: rgba(148,163,184,0.20); }
+    .book-progress-bar {
+        width: 24%; /* "you are here" — never fully complete until read */
+        height: 100%;
+        border-radius: 9999px;
+        background: linear-gradient(90deg,
+            var(--book-accent, #6366f1),
+            color-mix(in srgb, var(--book-accent, #6366f1) 50%, white));
+    }
+    .book-cta {
+        display: inline-flex; align-items: center; gap: 4px;
+        font-size: 12px; font-weight: 700;
+        color: var(--book-accent, #6366f1);
+    }
+
+    /* Chapter row in the "more chapters" list */
+    .chapter-row {
+        display: flex; align-items: center; gap: 12px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        transition: background 0.15s ease;
+        border-left: 2px solid transparent;
+    }
+    .chapter-row:hover {
+        background: color-mix(in srgb, var(--ch-accent, #6366f1) 6%, transparent);
+        border-left-color: var(--ch-accent, #6366f1);
+    }
+    .dark .chapter-row:hover {
+        background: color-mix(in srgb, var(--ch-accent, #6366f1) 14%, transparent);
+    }
+    .chapter-row-num {
+        flex-shrink: 0;
+        width: 32px; height: 32px;
+        display: grid; place-items: center;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 11px; font-weight: 700;
+        border-radius: 8px;
+        color: var(--ch-accent, #6366f1);
+        background: color-mix(in srgb, var(--ch-accent, #6366f1) 10%, transparent);
+        border: 1px solid color-mix(in srgb, var(--ch-accent, #6366f1) 25%, transparent);
+    }
+</style>
+{% endblock %}
+
 {% block app_content %}
 <div class="space-y-6">
 
-    <!-- ═══ WELCOME BANNER ═════════════════════════════════════════════ -->
-    <section class="relative overflow-hidden rounded-2xl border border-border/60
-                    bg-gradient-to-br from-indigo-500/10 via-violet-500/10 to-fuchsia-500/10
-                    dark:from-indigo-500/15 dark:via-violet-500/15 dark:to-fuchsia-500/15
-                    p-6 sm:p-8 shadow-sm">
-        <div class="absolute -right-12 -top-12 h-48 w-48 rounded-full
-                    bg-gradient-to-br from-indigo-400/30 to-violet-400/20 blur-3xl
-                    pointer-events-none" aria-hidden="true"></div>
-        <div class="absolute -left-12 -bottom-12 h-48 w-48 rounded-full
-                    bg-gradient-to-br from-fuchsia-400/20 to-pink-400/10 blur-3xl
-                    pointer-events-none" aria-hidden="true"></div>
+    <!-- ═══ HERO WELCOME BANNER ═══════════════════════════════════════ -->
+    <section class="dash-hero">
+        <div class="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
 
-        <div class="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div class="flex items-center gap-4 min-w-0">
-                <div class="grid h-14 w-14 flex-shrink-0 place-items-center rounded-2xl
-                            bg-gradient-to-br from-indigo-500 to-violet-600 text-white
-                            text-lg font-bold shadow-md ring-2 ring-white/30">
+            <div class="flex items-center gap-5 min-w-0">
+                <div class="dash-avatar">
                     {{ request.user.first_name|slice:":1"|default:request.user.username|slice:":1"|upper }}
                 </div>
                 <div class="min-w-0">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                    <p class="text-[11px] font-bold uppercase tracking-[0.10em] text-indigo-600 dark:text-indigo-400">
                         Welcome back
                     </p>
-                    <h1 class="mt-0.5 truncate text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                    <h1 class="mt-1 truncate text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                         Hi, {{ request.user.first_name|default:request.user.username }}
                     </h1>
                     <p class="mt-1 text-sm text-muted-foreground">
-                        Pick up where you left off — your learning path is waiting.
+                        {% if continue_card and continue_card.visited %}
+                            Continue from <span class="font-semibold text-foreground">{{ continue_card.label }}</span>
+                            — let's keep the momentum going.
+                        {% else %}
+                            Pick up where you left off — your learning path is waiting.
+                        {% endif %}
                     </p>
                 </div>
             </div>
 
-            <div class="flex flex-wrap items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2.5">
                 <span class="status-pill">
                     <span class="status-dot"></span>
                     {{ profile.role|default:"student"|capfirst }}
                 </span>
-                <a href="{% url 'explorer:index' %}"
-                   class="btn btn-primary">
-                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"
+                {% if continue_card %}
+                <a href="{% url 'explorer:'|add:continue_card.slug %}"
+                   class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r
+                          from-indigo-500 to-violet-600 px-4 py-2.5
+                          text-sm font-semibold text-white shadow-md
+                          hover:shadow-lg hover:from-indigo-600 hover:to-violet-700
+                          transition-all duration-200 hover:-translate-y-0.5">
+                    Continue learning
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
                          stroke-linejoin="round" aria-hidden="true">
                         <path d="M5 12h14M13 5l7 7-7 7"/>
                     </svg>
-                    Continue learning
                 </a>
+                {% endif %}
                 <button hx-post="{% url 'accounts:toggle_theme' %}"
                         hx-swap="none"
-                        class="btn btn-secondary"
-                        title="Toggle theme">
-                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"
+                        class="inline-flex h-10 w-10 items-center justify-center
+                               rounded-lg border border-border bg-card/60 text-foreground
+                               hover:bg-muted transition-colors"
+                        title="Toggle theme"
+                        aria-label="Toggle theme">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" stroke-width="2" stroke-linecap="round"
                          stroke-linejoin="round" aria-hidden="true">
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                     </svg>
-                    Theme
                 </button>
             </div>
         </div>
     </section>
 
-    <!-- ═══ STATS OVERVIEW ═════════════════════════════════════════════ -->
-    <section aria-label="Overview stats">
-        <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {% for s in stats %}
-                <div class="stat-card" style="--stat-accent:
-                    {% if s.accent == 'blue' %}#3b82f6
-                    {% elif s.accent == 'violet' %}#a855f7
-                    {% elif s.accent == 'emerald' %}#10b981
-                    {% elif s.accent == 'amber' %}#f59e0b
-                    {% else %}#6366f1{% endif %};">
-                    <div class="flex items-center justify-between gap-2">
-                        <span class="stat-label">{{ s.label }}</span>
-                        <svg class="h-3.5 w-3.5 opacity-60" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                             stroke-linejoin="round" style="color:
-                                {% if s.accent == 'blue' %}#3b82f6
-                                {% elif s.accent == 'violet' %}#a855f7
-                                {% elif s.accent == 'emerald' %}#10b981
-                                {% elif s.accent == 'amber' %}#f59e0b
-                                {% else %}#6366f1{% endif %};">
-                            <path d="{{ s.icon }}"/>
-                        </svg>
-                    </div>
-                    <span class="stat-value">{{ s.value }}</span>
-                    <span class="text-[10px] text-muted-foreground">{{ s.sub }}</span>
-                </div>
-            {% endfor %}
-        </div>
-    </section>
-
     <!-- ═══ QUICK ACTIONS ══════════════════════════════════════════════ -->
     <section aria-label="Quick actions">
-        <div class="mb-3 flex items-end justify-between gap-2">
+        <div class="sec-head">
             <div>
-                <h2 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                    Quick actions
-                </h2>
-                <p class="text-xs text-muted-foreground">
-                    One-click shortcuts to where you want to go.
-                </p>
+                <p class="sec-eyebrow">Shortcuts</p>
+                <h2 class="sec-title">Quick actions</h2>
+                <p class="sec-sub">One-tap access to the tools you use most.</p>
             </div>
         </div>
-        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {% for q in quick_actions %}
                 <a href="{% url q.href %}"
-                   class="board-section group block p-4 hover-elevate"
-                   style="--board-accent:
+                   class="qa-tile"
+                   style="--qa-accent:
                        {% if q.accent == 'blue' %}#3b82f6
                        {% elif q.accent == 'violet' %}#a855f7
                        {% elif q.accent == 'emerald' %}#10b981
                        {% elif q.accent == 'amber' %}#f59e0b
                        {% else %}#6366f1{% endif %};">
-                    <div class="flex items-center gap-2.5">
-                        <span class="board-title-badge">{{ forloop.counter }}</span>
-                        <span class="text-sm font-semibold text-foreground group-hover:text-foreground">
-                            {{ q.label }}
-                        </span>
+                    <span class="qa-icon">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                             stroke-linejoin="round" aria-hidden="true">
+                            <path d="{{ q.icon }}"/>
+                        </svg>
+                    </span>
+                    <div class="qa-text">
+                        <div class="qa-title">{{ q.label }}</div>
+                        <div class="qa-desc">{{ q.description }}</div>
                     </div>
+                    <span class="qa-arrow">
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                             stroke-linejoin="round" aria-hidden="true">
+                            <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                    </span>
                 </a>
             {% endfor %}
         </div>
     </section>
 
-    <!-- ═══ CONTINUE LEARNING + PROGRESS ═══════════════════════════════ -->
+    <!-- ═══ STATS OVERVIEW ═════════════════════════════════════════════ -->
+    <section aria-label="Overview stats">
+        <div class="sec-head">
+            <div>
+                <p class="sec-eyebrow">Snapshot</p>
+                <h2 class="sec-title">Your numbers at a glance</h2>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {% for s in stats %}
+                <div class="stat-block" style="--stat-accent:
+                    {% if s.accent == 'blue' %}#3b82f6
+                    {% elif s.accent == 'violet' %}#a855f7
+                    {% elif s.accent == 'emerald' %}#10b981
+                    {% elif s.accent == 'amber' %}#f59e0b
+                    {% else %}#6366f1{% endif %};">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <div class="stat-lbl">{{ s.label }}</div>
+                            <div class="stat-num">{{ s.value }}</div>
+                            <div class="stat-sub">{{ s.sub }}</div>
+                        </div>
+                        <div class="stat-icon">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                 stroke-linejoin="round" aria-hidden="true">
+                                <path d="{{ s.icon }}"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- ═══ CONTINUE LEARNING (FEATURED) + PROGRESS ════════════════════ -->
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
 
-        <!-- Continue learning (2/3) -->
-        <section class="board-section lg:col-span-2" data-board="modules" aria-label="Your modules">
-            <header class="board-header">
-                <div class="board-title">
-                    <span class="board-title-badge">M</span>
-                    <div class="board-title-text">
-                        <span class="board-title-eyebrow">Continue learning</span>
-                        <span class="board-title-h">Your modules</span>
-                    </div>
-                </div>
-                <div class="board-actions">
-                    <a href="{% url 'explorer:index' %}" class="btn btn-secondary">All modules →</a>
-                </div>
-            </header>
-            <div class="board-body">
-                {% if cards %}
-                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        {% for card in cards %}
-                            <a href="{% url 'explorer:'|add:card.slug %}"
-                               class="group relative block overflow-hidden rounded-xl
-                                      border border-border/60 bg-card/40 p-4 hover-elevate">
-                                <div class="absolute -right-6 -top-6 h-20 w-20 rounded-full
-                                            bg-gradient-to-br {{ card.gradient }}
-                                            blur-2xl opacity-60 transition-opacity
-                                            group-hover:opacity-100" aria-hidden="true"></div>
-                                <div class="relative flex items-start gap-3">
-                                    <div class="grid h-9 w-9 flex-shrink-0 place-items-center
-                                                rounded-lg bg-gradient-to-br {{ card.gradient }}
-                                                ring-1 ring-border/50">
-                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"
-                                             stroke="currentColor" stroke-width="2"
-                                             stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M3 3v18h18M7 14l4-4 3 3 5-5"/>
-                                        </svg>
-                                    </div>
-                                    <div class="min-w-0 flex-1">
-                                        <div class="flex items-center justify-between gap-2">
-                                            <h3 class="truncate text-sm font-semibold text-foreground">
-                                                {{ card.label }}
-                                            </h3>
-                                            {% if card.visited %}
-                                                <span class="status-pill !text-[9px]"
-                                                      style="background: rgba(16,185,129,0.10);
-                                                             border-color: rgba(16,185,129,0.30);
-                                                             color: #047857;">
-                                                    <span class="status-dot"></span>done
-                                                </span>
-                                            {% else %}
-                                                <span class="status-pill !text-[9px]">new</span>
-                                            {% endif %}
-                                        </div>
-                                        <p class="text-[11px] text-muted-foreground">
-                                            {{ card.group }} · {{ card.blurb }}
-                                        </p>
-                                        <code class="mt-1.5 inline-block font-mono text-[12px]
-                                                     text-foreground/80">
-                                            {{ card.formula }}
-                                        </code>
-                                    </div>
-                                </div>
-                            </a>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="rounded-lg bg-muted/40 p-6 text-sm text-muted-foreground">
-                        No modules unlocked yet. Ask a teacher to enable one.
-                    </div>
-                {% endif %}
-            </div>
-        </section>
+        <!-- Continue learning: featured + grid -->
+        <div class="lg:col-span-2 space-y-4">
 
-        <!-- Progress (1/3) -->
-        <section class="board-section" data-board="progress" aria-label="Your progress">
-            <header class="board-header">
-                <div class="board-title">
-                    <span class="board-title-badge">%</span>
-                    <div class="board-title-text">
-                        <span class="board-title-eyebrow">Your progress</span>
-                        <span class="board-title-h">Completion</span>
+            {% if continue_card %}
+            <!-- Featured / "continue" card -->
+            <a href="{% url 'explorer:'|add:continue_card.slug %}"
+               class="featured-card group block"
+               aria-label="Continue {{ continue_card.label }}">
+                <div class="relative">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-white/80">
+                        {% if continue_card.visited %}Pick up where you left off{% else %}Start with{% endif %}
+                    </p>
+                    <h3 class="mt-1 text-2xl font-bold leading-tight">
+                        {{ continue_card.label }}
+                    </h3>
+                    <p class="mt-1 text-sm text-white/85 max-w-lg">
+                        {{ continue_card.blurb }} — dive into the interactive visualizer.
+                    </p>
+                    <code class="mt-3 inline-block font-mono text-[13px] text-white/95
+                                bg-white/15 px-2.5 py-1 rounded-md">
+                        {{ continue_card.formula }}
+                    </code>
+                    <div class="mt-4 inline-flex items-center gap-2 text-sm font-semibold">
+                        <span>Open module</span>
+                        <svg class="h-4 w-4 transition-transform group-hover:translate-x-1"
+                             viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M5 12h14M13 5l7 7-7 7"/>
+                        </svg>
                     </div>
                 </div>
-            </header>
-            <div class="board-body space-y-5">
-                <!-- Big percentage ring -->
-                <div class="flex items-center gap-4">
-                    <div class="relative h-20 w-20 flex-shrink-0">
+            </a>
+            {% endif %}
+
+            <!-- Module grid -->
+            <section class="dash-section" style="--sec-accent: #6366f1;" aria-label="All modules">
+                <div class="dash-section-head">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <span class="section-badge">
+                            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                 stroke-linejoin="round" aria-hidden="true">
+                                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                                <rect x="14" y="14" width="7" height="7" rx="1"/>
+                            </svg>
+                        </span>
+                        <div class="min-w-0">
+                            <div class="section-eyebrow">Library</div>
+                            <div class="section-h">All your modules</div>
+                        </div>
+                    </div>
+                    <a href="{% url 'explorer:index' %}" class="link-btn">
+                        View all
+                        <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                             stroke-linejoin="round" aria-hidden="true">
+                            <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                    </a>
+                </div>
+                <div class="dash-section-body">
+                    {% if cards %}
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            {% for card in cards %}
+                                <a href="{% url 'explorer:'|add:card.slug %}"
+                                   class="mod-card"
+                                   style="--mod-accent:
+                                       {% if card.slug == 'linear' %}#3b82f6
+                                       {% elif card.slug == 'quadratic' %}#a855f7
+                                       {% elif card.slug == 'trig' %}#06b6d4
+                                       {% elif card.slug == 'derivative' %}#f97316
+                                       {% elif card.slug == 'integral' %}#10b981
+                                       {% elif card.slug == 'geometry' %}#ec4899
+                                       {% elif card.slug == 'transform' %}#f59e0b
+                                       {% else %}#6366f1{% endif %};
+                                       --mod-glow:
+                                       {% if card.slug == 'linear' %}rgba(59,130,246,0.45)
+                                       {% elif card.slug == 'quadratic' %}rgba(168,85,247,0.45)
+                                       {% elif card.slug == 'trig' %}rgba(6,182,212,0.45)
+                                       {% elif card.slug == 'derivative' %}rgba(249,115,22,0.45)
+                                       {% elif card.slug == 'integral' %}rgba(16,185,129,0.45)
+                                       {% elif card.slug == 'geometry' %}rgba(236,72,153,0.45)
+                                       {% elif card.slug == 'transform' %}rgba(245,158,11,0.45)
+                                       {% else %}rgba(99,102,241,0.45){% endif %};">
+                                    <span class="mod-glow" aria-hidden="true"></span>
+                                    <div class="relative flex items-start gap-3">
+                                        <div class="mod-icon">
+                                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                                                 stroke="currentColor" stroke-width="2"
+                                                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <path d="M3 3v18h18M7 14l4-4 3 3 5-5"/>
+                                            </svg>
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <div class="flex items-center justify-between gap-2">
+                                                <h4 class="mod-title truncate">{{ card.label }}</h4>
+                                                {% if card.visited %}
+                                                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                                                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                                                        done
+                                                    </span>
+                                                {% else %}
+                                                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground">
+                                                        <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                                                        new
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            <p class="mod-meta">{{ card.group }} · {{ card.blurb }}</p>
+                                            <code class="mod-formula">{{ card.formula }}</code>
+                                        </div>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <p class="text-sm text-muted-foreground">
+                                No modules unlocked yet. Ask a teacher to enable one.
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+
+        <!-- Progress side card -->
+        <section class="dash-section" style="--sec-accent: #10b981;" aria-label="Your progress">
+            <div class="dash-section-head">
+                <div class="flex items-center gap-3 min-w-0">
+                    <span class="section-badge">
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                             stroke-linejoin="round" aria-hidden="true">
+                            <path d="M3 12a9 9 0 1 0 9-9"/>
+                            <path d="M3 12a9 9 0 0 0 9 9"/>
+                        </svg>
+                    </span>
+                    <div class="min-w-0">
+                        <div class="section-eyebrow">Tracking</div>
+                        <div class="section-h">Your progress</div>
+                    </div>
+                </div>
+            </div>
+            <div class="dash-section-body space-y-5">
+
+                <!-- Big ring + caption -->
+                <div class="flex items-center gap-5">
+                    <div class="prog-ring-wrap">
                         <svg viewBox="0 0 36 36" class="h-full w-full -rotate-90">
-                            <circle cx="18" cy="18" r="15" fill="none"
-                                    stroke="rgba(15,23,42,0.10)" stroke-width="3"/>
-                            <circle cx="18" cy="18" r="15" fill="none"
-                                    stroke="url(#progressGrad)" stroke-width="3"
+                            <circle cx="18" cy="18" r="15.5" fill="none"
+                                    stroke="rgba(15,23,42,0.08)" stroke-width="3"/>
+                            <circle cx="18" cy="18" r="15.5" fill="none"
+                                    stroke="url(#progGrad)" stroke-width="3"
                                     stroke-linecap="round"
                                     stroke-dasharray="{{ completion_pct }}, 100"/>
                             <defs>
-                                <linearGradient id="progressGrad" x1="0" y1="0" x2="1" y2="1">
-                                    <stop offset="0%" stop-color="#6366f1"/>
+                                <linearGradient id="progGrad" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0%"  stop-color="#6366f1"/>
+                                    <stop offset="60%" stop-color="#8b5cf6"/>
                                     <stop offset="100%" stop-color="#10b981"/>
                                 </linearGradient>
                             </defs>
                         </svg>
-                        <div class="absolute inset-0 grid place-items-center">
-                            <span class="font-mono text-lg font-bold text-foreground">
-                                {{ completion_pct }}%
-                            </span>
+                        <div class="prog-ring-text">
+                            <div class="text-center">
+                                <div class="font-mono text-2xl font-bold text-foreground leading-none">
+                                    {{ completion_pct }}%
+                                </div>
+                                <div class="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">
+                                    complete
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="min-w-0 flex-1">
                         <p class="text-sm font-semibold text-foreground">Task completion</p>
-                        <p class="text-xs text-muted-foreground">
+                        <p class="text-xs text-muted-foreground mt-0.5">
                             {{ recent_subs|length }} of
-                            {{ pending_tasks|length|add:recent_subs|length }} tasks done
+                            {{ pending_tasks|length|add:recent_subs|length }} tasks done.
                         </p>
                     </div>
                 </div>
 
                 <!-- Module visit bar -->
                 <div>
-                    <div class="mb-1.5 flex items-center justify-between text-[11px] text-muted-foreground">
-                        <span class="font-semibold">Modules visited</span>
-                        <span class="font-mono">{{ modules_visited }} / {{ modules_unlocked }}</span>
+                    <div class="mb-2 flex items-center justify-between">
+                        <span class="text-xs font-semibold text-foreground">Modules visited</span>
+                        <span class="font-mono text-xs text-muted-foreground">
+                            {{ modules_visited }} / {{ modules_unlocked }}
+                        </span>
                     </div>
-                    <div class="h-2 overflow-hidden rounded-full bg-muted/50">
+                    <div class="prog-bar">
                         {% if modules_unlocked %}
-                            <div class="h-full rounded-full
-                                        bg-gradient-to-r from-blue-500 via-violet-500 to-emerald-500"
+                            <div class="prog-bar-fill"
                                  style="width: {% widthratio modules_visited modules_unlocked 100 %}%;"></div>
-                        {% else %}
-                            <div class="h-full w-0 rounded-full"></div>
                         {% endif %}
                     </div>
                 </div>
 
-                <!-- Mini review list -->
+                <!-- Recent feedback -->
                 {% if reviewed_subs %}
                     <div>
-                        <h3 class="mb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        <h3 class="mb-2.5 text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
                             Recent feedback
                         </h3>
-                        <ul class="space-y-1.5 text-[12px]">
+                        <ul class="space-y-1.5">
                             {% for s in reviewed_subs %}
                                 <li class="flex items-center justify-between gap-2
-                                           rounded-md bg-muted/40 px-2.5 py-1.5">
-                                    <span class="truncate">{{ s.task.title }}</span>
+                                           rounded-lg bg-muted/40 px-3 py-2 text-xs">
+                                    <span class="truncate text-foreground">{{ s.task.title }}</span>
                                     {% if s.score is not None %}
                                         <span class="font-mono text-xs font-bold
                                                      text-emerald-600 dark:text-emerald-400">
@@ -291,156 +916,298 @@
         </section>
     </div>
 
-    <!-- ═══ READING + TASKS ════════════════════════════════════════════ -->
+    <!-- ═══ TASKS ══════════════════════════════════════════════════════ -->
+    <section class="dash-section" style="--sec-accent: #a855f7;" aria-label="Tasks">
+        <div class="dash-section-head">
+            <div class="flex items-center gap-3 min-w-0">
+                <span class="section-badge">
+                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                         stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                    </svg>
+                </span>
+                <div class="min-w-0">
+                    <div class="section-eyebrow">Stay on track</div>
+                    <div class="section-h">Upcoming tasks</div>
+                </div>
+            </div>
+            <a href="{% url 'tasks:list' %}" class="link-btn">
+                View all
+                <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                     stroke-linejoin="round" aria-hidden="true">
+                    <path d="M9 18l6-6-6-6"/>
+                </svg>
+            </a>
+        </div>
+        <div class="dash-section-body">
+            {% if pending_tasks %}
+                <ul class="space-y-2.5">
+                    {% for t in pending_tasks %}
+                        <li class="task-row">
+                            <div class="task-icon
+                                        {% if t.is_overdue %}bg-red-500/15 text-red-600 dark:text-red-400
+                                        {% else %}bg-violet-500/15 text-violet-600 dark:text-violet-400{% endif %}">
+                                {% if t.is_overdue %}
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="2"
+                                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                    </svg>
+                                {% else %}
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="2"
+                                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                                    </svg>
+                                {% endif %}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="task-title">{{ t.title }}</p>
+                                <p class="task-meta">
+                                    Due {{ t.due_date }}
+                                    {% if t.is_overdue %}
+                                        · <span class="font-semibold text-red-600 dark:text-red-400">overdue</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <svg class="h-4 w-4 text-muted-foreground flex-shrink-0"
+                                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M9 18l6-6-6-6"/>
+                            </svg>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">
+                    <div class="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full
+                                bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                             stroke-linejoin="round" aria-hidden="true">
+                            <path d="M20 6L9 17l-5-5"/>
+                        </svg>
+                    </div>
+                    <p class="text-sm font-semibold text-foreground">All caught up!</p>
+                    <p class="mt-1 text-xs text-muted-foreground">
+                        No pending tasks. Time to explore something new.
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- ═══ READING + ACTIVITY ═════════════════════════════════════════ -->
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
 
         <!-- Reading recommendations -->
-        <section class="board-section" data-board="reading" aria-label="Reading recommendations">
-            <header class="board-header">
-                <div class="board-title">
-                    <span class="board-title-badge">R</span>
-                    <div class="board-title-text">
-                        <span class="board-title-eyebrow">Read &amp; learn</span>
-                        <span class="board-title-h">Reading recommendations</span>
-                    </div>
-                </div>
-                <div class="board-actions">
-                    <a href="{% url 'reading:index' %}" class="btn btn-secondary">All →</a>
-                </div>
-            </header>
-            <div class="board-body">
-                {% if reading_recos %}
-                    <ul class="divide-y divide-border/40">
-                        {% for r in reading_recos %}
-                            <li class="py-2.5 first:pt-0 last:pb-0">
-                                <a href="{% url 'reading:detail' r.slug %}" class="group flex items-start gap-3">
-                                    <div class="grid h-7 w-7 flex-shrink-0 place-items-center rounded-md
-                                                bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"
-                                             stroke="currentColor" stroke-width="2"
-                                             stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 1 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z"/>
-                                        </svg>
-                                    </div>
-                                    <div class="min-w-0 flex-1">
-                                        <p class="truncate text-sm font-semibold text-foreground
-                                                  group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                                            {{ r.title }}
-                                        </p>
-                                        <p class="text-[11px] text-muted-foreground">
-                                            {{ r.get_module_id_display|default:"" }}
-                                        </p>
-                                    </div>
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p class="text-sm text-muted-foreground">No reading yet.</p>
-                {% endif %}
-            </div>
-        </section>
-
-        <!-- Upcoming tasks -->
-        <section class="board-section" data-board="tasks" aria-label="Upcoming tasks">
-            <header class="board-header">
-                <div class="board-title">
-                    <span class="board-title-badge">T</span>
-                    <div class="board-title-text">
-                        <span class="board-title-eyebrow">Stay on track</span>
-                        <span class="board-title-h">Upcoming tasks</span>
-                    </div>
-                </div>
-                <div class="board-actions">
-                    <a href="{% url 'tasks:list' %}" class="btn btn-secondary">All →</a>
-                </div>
-            </header>
-            <div class="board-body">
-                {% if pending_tasks %}
-                    <ul class="space-y-2">
-                        {% for t in pending_tasks %}
-                            <li class="flex items-center gap-3 rounded-md bg-muted/40 px-3 py-2.5">
-                                <div class="grid h-8 w-8 flex-shrink-0 place-items-center rounded-md
-                                            {% if t.is_overdue %}bg-red-500/15 text-red-600 dark:text-red-400
-                                            {% else %}bg-violet-500/10 text-violet-600 dark:text-violet-400{% endif %}">
-                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"
-                                         stroke="currentColor" stroke-width="2"
-                                         stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                                    </svg>
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <p class="truncate text-sm font-medium text-foreground">
-                                        {{ t.title }}
-                                    </p>
-                                    <p class="text-[11px] text-muted-foreground">
-                                        Due {{ t.due_date }}
-                                        {% if t.is_overdue %}
-                                            · <span class="font-semibold text-red-600 dark:text-red-400">overdue</span>
-                                        {% endif %}
-                                    </p>
-                                </div>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p class="text-sm text-muted-foreground">
-                        All caught up — no pending tasks.
-                    </p>
-                {% endif %}
-            </div>
-        </section>
-    </div>
-
-    <!-- ═══ RECENT SUBMISSIONS ═════════════════════════════════════════ -->
-    {% if recent_subs %}
-        <section class="board-section" data-board="activity" aria-label="Recent submissions">
-            <header class="board-header">
-                <div class="board-title">
-                    <span class="board-title-badge">
+        <section class="dash-section" style="--sec-accent: #3b82f6;" aria-label="Reading recommendations">
+            <div class="dash-section-head">
+                <div class="flex items-center gap-3 min-w-0">
+                    <span class="section-badge">
                         <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                             stroke-linejoin="round" aria-hidden="true">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 1 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z"/>
+                        </svg>
+                    </span>
+                    <div class="min-w-0">
+                        <div class="section-eyebrow">Read &amp; learn</div>
+                        <div class="section-h">From the reading room</div>
+                    </div>
+                </div>
+                <a href="{% url 'reading:index' %}" class="link-btn">
+                    All chapters
+                    <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                         stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </a>
+            </div>
+            <div class="dash-section-body space-y-4">
+
+                {% if reading_featured %}
+                <!-- ─── Featured chapter ──────────────────────────────── -->
+                <a href="{% url 'reading:detail' reading_featured.slug %}"
+                   class="book-card group block"
+                   style="--book-accent: {{ reading_featured.accent_color }};">
+
+                    <!-- Top accent bar -->
+                    <div class="book-accent" aria-hidden="true"></div>
+
+                    <!-- Header strip -->
+                    <div class="flex items-center justify-between gap-3 px-5 pt-4">
+                        <div class="flex items-center gap-2">
+                            <span class="chapter-num">Chapter {{ reading_featured.chapter_number|stringformat:"02d" }}</span>
+                            <span class="chapter-dot" aria-hidden="true">·</span>
+                            <span class="reading-time">
+                                <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                     stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M12 8v4l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+                                </svg>
+                                {{ reading_featured.reading_minutes }} min read
+                            </span>
+                        </div>
+                        <span class="module-pill">
+                            {{ reading_featured.get_module_id_display|default:"" }}
+                        </span>
+                    </div>
+
+                    <!-- Title + excerpt -->
+                    <div class="px-5 pt-3">
+                        <h3 class="book-title font-serif">
+                            {{ reading_featured.title }}
+                        </h3>
+                        <p class="book-excerpt">
+                            {{ reading_featured.excerpt }}
+                        </p>
+                    </div>
+
+                    <!-- Key ideas -->
+                    {% if reading_featured.key_ideas %}
+                    <ul class="book-ideas px-5 pt-3">
+                        {% for idea in reading_featured.key_ideas %}
+                            <li>
+                                <span class="idea-dot" aria-hidden="true"></span>
+                                {{ idea }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+
+                    <!-- Footer / CTA -->
+                    <div class="book-footer">
+                        <div class="book-progress">
+                            <div class="book-progress-bar"></div>
+                        </div>
+                        <span class="book-cta">
+                            Read full chapter
+                            <svg class="h-3.5 w-3.5 transition-transform group-hover:translate-x-1"
+                                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M5 12h14M13 5l7 7-7 7"/>
+                            </svg>
+                        </span>
+                    </div>
+                </a>
+                {% endif %}
+
+                <!-- ─── Other chapters (compact list) ────────────────── -->
+                {% if reading_recos|length > 1 %}
+                <div>
+                    <p class="mb-2 text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
+                        More chapters
+                    </p>
+                    <ul class="space-y-1">
+                        {% for r in reading_recos %}
+                            {% if r.id != reading_featured.id %}
+                                <li>
+                                    <a href="{% url 'reading:detail' r.slug %}"
+                                       class="chapter-row group"
+                                       style="--ch-accent: {{ r.accent_color }};">
+                                        <span class="chapter-row-num">
+                                            {{ r.chapter_number|stringformat:"02d" }}
+                                        </span>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="truncate text-sm font-semibold text-foreground
+                                                      group-hover:text-foreground transition-colors">
+                                                {{ r.title }}
+                                            </p>
+                                            <p class="truncate text-[11px] text-muted-foreground">
+                                                {{ r.get_module_id_display|default:"" }}
+                                                · {{ r.reading_minutes }} min
+                                            </p>
+                                        </div>
+                                        <svg class="h-3.5 w-3.5 text-muted-foreground flex-shrink-0
+                                                     transition-transform group-hover:translate-x-0.5"
+                                             viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M9 18l6-6-6-6"/>
+                                        </svg>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                {% if not reading_recos %}
+                <div class="empty-state">
+                    <p class="text-sm text-muted-foreground">No reading yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Recent activity -->
+        <section class="dash-section" style="--sec-accent: #f59e0b;" aria-label="Recent activity">
+            <div class="dash-section-head">
+                <div class="flex items-center gap-3 min-w-0">
+                    <span class="section-badge">
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
                              stroke-linejoin="round" aria-hidden="true">
                             <path d="M12 8v4l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
                         </svg>
                     </span>
-                    <div class="board-title-text">
-                        <span class="board-title-eyebrow">Timeline</span>
-                        <span class="board-title-h">Recent submissions</span>
+                    <div class="min-w-0">
+                        <div class="section-eyebrow">Timeline</div>
+                        <div class="section-h">Recent activity</div>
                     </div>
                 </div>
-                <div class="board-actions">
-                    <a href="{% url 'tasks:list' %}" class="btn btn-secondary">View all →</a>
-                </div>
-            </header>
-            <div class="board-body">
-                <ul class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                    {% for s in recent_subs %}
-                        <li class="flex items-start gap-2.5 rounded-md
-                                   border border-border/40 bg-card/30 px-3 py-2.5">
-                            <div class="grid h-7 w-7 flex-shrink-0 place-items-center rounded-md
-                                        {% if s.reviewed %}bg-emerald-500/15 text-emerald-600 dark:text-emerald-400
-                                        {% else %}bg-amber-500/15 text-amber-600 dark:text-amber-400{% endif %}">
-                                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"
-                                     stroke="currentColor" stroke-width="2"
-                                     stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M12 8v4l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
-                                </svg>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <p class="truncate text-sm font-medium text-foreground">
-                                    {{ s.task.title }}
-                                </p>
-                                <p class="text-[11px] text-muted-foreground">
-                                    {{ s.submitted_at|date:"N j, P" }}
-                                    · {% if s.reviewed %}reviewed{% else %}awaiting review{% endif %}
-                                </p>
-                            </div>
-                        </li>
-                    {% endfor %}
-                </ul>
+                <a href="{% url 'tasks:list' %}" class="link-btn">
+                    All
+                    <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                         stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </a>
+            </div>
+            <div class="dash-section-body">
+                {% if recent_subs %}
+                    <ul class="space-y-2">
+                        {% for s in recent_subs %}
+                            <li class="act-row">
+                                <div class="grid h-9 w-9 flex-shrink-0 place-items-center rounded-lg
+                                            {% if s.reviewed %}bg-emerald-500/15 text-emerald-600 dark:text-emerald-400
+                                            {% else %}bg-amber-500/15 text-amber-600 dark:text-amber-400{% endif %}">
+                                    {% if s.reviewed %}
+                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor" stroke-width="2"
+                                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M20 6L9 17l-5-5"/>
+                                        </svg>
+                                    {% else %}
+                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                                             stroke="currentColor" stroke-width="2"
+                                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                            <path d="M12 8v4l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+                                        </svg>
+                                    {% endif %}
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="truncate text-sm font-medium text-foreground">{{ s.task.title }}</p>
+                                    <p class="truncate text-[11px] text-muted-foreground">
+                                        {{ s.submitted_at|date:"N j, P" }}
+                                        · {% if s.reviewed %}reviewed{% else %}awaiting review{% endif %}
+                                    </p>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-state">
+                        <p class="text-sm text-muted-foreground">No recent activity yet.</p>
+                    </div>
+                {% endif %}
             </div>
         </section>
-    {% endif %}
+    </div>
 </div>
 {% endblock %}

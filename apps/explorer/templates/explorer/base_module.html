@@ -7,6 +7,26 @@
 {% block extra_head %}
     {{ block.super }}
     <link rel="stylesheet" href="{% static 'css/glass.css' %}">
+    <style>
+        .module-back {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 12px;
+            font-size: 12px; font-weight: 600;
+            color: hsl(var(--muted-foreground));
+            background: rgba(255,255,255,0.55);
+            border: 1px solid rgba(15,23,42,0.10);
+            border-radius: 9999px;
+            transition: all 0.15s ease;
+            backdrop-filter: blur(8px);
+        }
+        .module-back:hover {
+            color: hsl(var(--foreground));
+            background: rgba(255,255,255,0.85);
+            transform: translateX(-2px);
+        }
+        .dark .module-back { background: rgba(15,23,42,0.55); border-color: rgba(148,163,184,0.20); }
+        .dark .module-back:hover { background: rgba(15,23,42,0.85); }
+    </style>
 {% endblock %}
 
 {% block app_content %}
@@ -18,12 +38,31 @@
         <!-- Page header -->
         <header class="flex flex-wrap items-end justify-between gap-4 border-b border-border/60 pb-4">
             <div class="min-w-0">
-                <nav class="text-xs uppercase tracking-wider text-muted-foreground">
-                    <a href="{% url 'explorer:index' %}" class="hover:text-foreground">Modules</a>
-                    <span class="mx-1.5 opacity-50">/</span>
-                    <span class="text-foreground">{{ module|module_title }}</span>
-                </nav>
-                <h1 class="mt-1 text-3xl font-bold tracking-tight text-foreground">
+                <!-- Back button row -->
+                <div class="mb-3 flex flex-wrap items-center gap-2">
+                    <a href="{% url 'explorer:index' %}" class="module-back">
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                             stroke-linejoin="round" aria-hidden="true">
+                            <path d="M19 12H5M12 19l-7-7 7-7"/>
+                        </svg>
+                        Back to modules
+                    </a>
+                    <a href="{% url 'home' %}" class="module-back">
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                             stroke-linejoin="round" aria-hidden="true">
+                            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            <polyline points="9 22 9 12 15 12 15 22"/>
+                        </svg>
+                        Dashboard
+                    </a>
+                    <nav class="text-xs uppercase tracking-wider text-muted-foreground ml-1">
+                        <span class="opacity-50">Modules /</span>
+                        <span class="text-foreground ml-1">{{ module|module_title }}</span>
+                    </nav>
+                </div>
+                <h1 class="text-3xl font-bold tracking-tight text-foreground">
                     {{ module|module_title }}
                 </h1>
                 <p class="mt-1 text-sm text-muted-foreground">

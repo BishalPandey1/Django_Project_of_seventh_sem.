@@ -45,6 +45,18 @@ def home(request):
             "visited": slug in visited,
         })
 
+    # ── 1b. Featured "continue" card — the most recently visited module
+    # (if any) becomes the hero recommendation.
+    visited_order = list(profile.visited_modules or [])
+    continue_card = None
+    for slug in reversed(visited_order):
+        match = next((c for c in cards if c["slug"] == slug), None)
+        if match:
+            continue_card = match
+            break
+    if not continue_card and cards:
+        continue_card = cards[0]
+
     # ── 2. Tasks — pending + done + reviewed counts ──────────────────────
     pending_tasks, recent_subs, reviewed_subs = [], [], []
     pending_count = done_count = reviewed_count = overdue_count = 0
@@ -66,6 +78,7 @@ def home(request):
 
     # ── 3. Reading recommendations ──────────────────────────────────────
     reading_recos = []
+    reading_featured = None
     try:
         from apps.reading.models import ReadingPage
         reading_recos = list(
@@ -75,6 +88,15 @@ def home(request):
         )
         if not reading_recos:
             reading_recos = list(ReadingPage.objects.all()[:4])
+        # Feature the reading for the last visited module (if any), else the
+        # first chapter — gives a "real book" feel on the dashboard.
+        if reading_recos:
+            for r in reading_recos:
+                if r.module_id in visited:
+                    reading_featured = r
+                    break
+            if not reading_featured:
+                reading_featured = reading_recos[0]
     except Exception:
         pass
 
@@ -119,18 +141,44 @@ def home(request):
 
     # ── 5. Quick actions ────────────────────────────────────────────────
     quick_actions = [
-        {"label": "Read a lesson",     "href": "accounts:lessons",   "icon": "book",   "accent": "blue"},
-        {"label": "Open tasks",         "href": "tasks:list",        "icon": "list",   "accent": "violet"},
-        {"label": "Browse modules",     "href": "explorer:index",    "icon": "grid",   "accent": "emerald"},
-        {"label": "Get help",           "href": "accounts:help",     "icon": "help",   "accent": "amber"},
+        {
+            "label": "Read a lesson",
+            "description": "Step-by-step theory with examples",
+            "href": "accounts:lessons",
+            "icon": "M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 1 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15z",
+            "accent": "blue",
+        },
+        {
+            "label": "Open tasks",
+            "description": "Practice problems to solve",
+            "href": "tasks:list",
+            "icon": "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11",
+            "accent": "violet",
+        },
+        {
+            "label": "Browse modules",
+            "description": "Explore all interactive topics",
+            "href": "explorer:index",
+            "icon": "M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z",
+            "accent": "emerald",
+        },
+        {
+            "label": "Whiteboard",
+            "description": "Sketch, draw & annotate",
+            "href": "whiteboard:whiteboard-page",
+            "icon": "M12 19l7-7 3 3-7 7-3-3zM18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5zM2 2l7.586 7.586",
+            "accent": "amber",
+        },
     ]
 
     return render(request, "dashboard/home.html", {
         "cards": cards,
+        "continue_card": continue_card,
         "pending_tasks": pending_tasks,
         "recent_subs": recent_subs,
         "reviewed_subs": reviewed_subs,
         "reading_recos": reading_recos,
+        "reading_featured": reading_featured,
         "stats": stats,
         "quick_actions": quick_actions,
         "completion_pct": completion_pct,
