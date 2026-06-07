@@ -1283,12 +1283,20 @@ body.focus-open { overflow: hidden; }
 }
 
 /* =========================================================
-   v1 Focus + Freeze&draw polish
-   These rules override the earlier v2 focus CSS so the
-   markup in _module_body.html (single horizontal toolbar,
-   centered canvas over backdrop, light glass theme) lays
-   out cleanly. The v2 selectors above are kept for the
-   test that asserts their presence, but are dead for v1.
+   v1 Focus + Freeze&draw polish (round 2)
+   - Diagram (backdrop) + canvas look like ONE paper surface.
+     The canvas-wrap is now transparent; the diagram's white
+     background shows through and strokes look like they're
+     drawn directly on the chart.
+   - Stage background is reset to a light tint (the earlier
+     v2 dark glass would otherwise leak through).
+   - Toolbar is a 2-row "design tool" panel with a tiny
+     section label on the left of each group (TOOLS, HISTORY,
+     COLORS, SIZE, FILE), clear active states, and a
+     "ready" status pill with a soft pulse.
+   - Layout uses CSS grid centering instead of
+     left: 50%; transform: translateX(-50%) so the toolbar
+     doesn't drift on overflow.
    ========================================================= */
 
 body.focus-open { overflow: hidden; }
@@ -1301,9 +1309,9 @@ body.focus-open { overflow: hidden; }
     align-items: stretch;
     justify-content: center;
     background:
-        radial-gradient(ellipse at top left, rgba(99,102,241,0.12), transparent 55%),
-        radial-gradient(ellipse at bottom right, rgba(236,72,153,0.10), transparent 55%),
-        rgba(248,250,255,0.70);
+        radial-gradient(ellipse at top left, rgba(99,102,241,0.10), transparent 55%),
+        radial-gradient(ellipse at bottom right, rgba(236,72,153,0.08), transparent 55%),
+        rgba(248,250,255,0.72);
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
     color: #0f172a;
@@ -1315,34 +1323,37 @@ body.focus-open { overflow: hidden; }
     width: 100%;
     height: 100%;
     display: grid;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: auto 1fr;
     gap: 12px;
-    padding: 14px 18px 18px;
+    padding: 14px 18px 56px;
+    box-sizing: border-box;
 }
 
+/* ── Header ── */
 .focus-header {
     display: flex;
     align-items: center;
     gap: 16px;
     padding: 10px 14px;
-    background: rgba(255,255,255,0.78);
+    background: rgba(255,255,255,0.82);
     border: 1px solid rgba(15,23,42,0.08);
     border-radius: 14px;
     box-shadow: 0 8px 24px rgba(15,23,42,0.06);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+    flex-wrap: wrap;
 }
 .focus-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .focus-title-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px; height: 28px;
-    border-radius: 8px;
+    width: 30px; height: 30px;
+    border-radius: 9px;
     background: linear-gradient(135deg, #6366f1, #ec4899);
     color: #fff;
     font-weight: 700;
-    font-size: 13px;
+    font-size: 14px;
     letter-spacing: 0.04em;
     box-shadow: 0 4px 10px rgba(99,102,241,0.30);
 }
@@ -1353,6 +1364,7 @@ body.focus-open { overflow: hidden; }
     letter-spacing: 0.12em;
     color: #64748b;
     font-weight: 600;
+    opacity: 1;
 }
 .focus-title-h {
     font-size: 15px;
@@ -1373,16 +1385,16 @@ body.focus-open { overflow: hidden; }
     border-radius: 8px;
     font-size: 12px;
     color: #1e293b;
-    max-width: 40%;
+    max-width: 42%;
     min-width: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    flex: 0 1 auto;
 }
 .focus-formula-label {
     color: #6366f1;
     font-weight: 600;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 .focus-formula-text {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1404,51 +1416,76 @@ body.focus-open { overflow: hidden; }
 }
 .focus-actions .btn-secondary:hover { background: rgba(15,23,42,0.10); }
 
+/* ── Stage: light surface, no dark glass leak from v2 ── */
 .focus-stage {
     position: relative;
     width: 100%;
     height: 100%;
     min-height: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 14px;
+    background: rgba(241,245,249,0.45);
+    border: 1px solid rgba(15,23,42,0.06);
+    border-radius: 14px;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
-.focus-backdrop,
+/* ── Backdrop: the diagram "paper" (white sheet with border + shadow) ── */
+.focus-backdrop {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(calc(100% - 32px), calc((100% - 32px) * 16 / 9));
+    max-width: 1600px;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    max-height: calc(100% - 32px);
+    background: #ffffff;
+    border: 1px solid rgba(15,23,42,0.10);
+    border-radius: 10px;
+    box-shadow: 0 14px 44px rgba(15,23,42,0.12), 0 1px 0 rgba(255,255,255,0.6) inset;
+    z-index: 0;
+    object-fit: contain;
+    pointer-events: none;
+}
+.focus-backdrop[hidden] { display: none; }
+
+/* ── Canvas wrap: completely transparent, sits exactly on the backdrop ── */
 .focus-canvas-wrap {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: min(calc(100% - 28px), calc((100% - 28px) * 16 / 9));
+    width: min(calc(100% - 32px), calc((100% - 32px) * 16 / 9));
     max-width: 1600px;
     aspect-ratio: 16 / 9;
     height: auto;
-    max-height: calc(100% - 28px);
-    background: #ffffff;
-    border: 1px solid rgba(15,23,42,0.10);
-    border-radius: 12px;
-    box-shadow: 0 12px 40px rgba(15,23,42,0.10), 0 1px 0 rgba(255,255,255,0.6) inset;
+    max-height: calc(100% - 32px);
+    background: transparent;
+    border: 0;
+    border-radius: 10px;
+    box-shadow: none;
+    z-index: 1;
     overflow: hidden;
 }
-.focus-backdrop {
-    z-index: 0;
-    object-fit: contain;
+/* When there's no backdrop behind us, draw a subtle dashed inner outline
+   so the user still sees where the drawing surface is. */
+.focus-canvas-wrap:not([data-has-backdrop="true"])::after {
+    content: "";
+    position: absolute;
+    inset: 10px;
+    border: 1.5px dashed rgba(99,102,241,0.30);
+    border-radius: 8px;
     pointer-events: none;
-    padding: 0;
 }
-.focus-backdrop[hidden] { display: none; }
-.focus-canvas-wrap {
-    z-index: 1;
-    border: 1px solid rgba(99,102,241,0.35);
-}
+
 .focus-canvas {
     display: block;
     width: 100%;
     height: 100%;
     cursor: crosshair;
     touch-action: none;
+    background: transparent;
 }
 .focus-text-input {
     position: absolute;
@@ -1462,156 +1499,259 @@ body.focus-open { overflow: hidden; }
     outline: none;
 }
 
+/* ── Toolbar: floating pill, small by default, expands on hover ──
+     Collapsed: a 32px indigo circle with a pen icon at bottom-center
+     of the stage. Hover over it → blooms open into the full toolbar.
+     :focus-within keeps it expanded while a tool button holds focus. ── */
 .focus-toolbar {
-    position: relative;
+    position: absolute;
+    bottom: 18px;
     left: 50%;
     transform: translateX(-50%);
+    z-index: 5;
+
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 6px;
+    gap: 0;
+
+    /* collapsed: tiny circle */
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    white-space: nowrap;
+    box-sizing: border-box;
     flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
+
+    background: #6366f1;
+    border: 0;
+    box-shadow: 0 4px 14px rgba(99,102,241,0.40);
+    cursor: pointer;
+
+    transition:
+        width 200ms cubic-bezier(0.34,1.56,0.64,1),
+        height 200ms cubic-bezier(0.34,1.56,0.64,1),
+        border-radius 200ms ease,
+        padding 200ms ease,
+        background 200ms ease,
+        border 200ms ease,
+        box-shadow 200ms ease,
+        gap 200ms ease;
+}
+
+/* Pen icon inside the collapsed circle */
+.focus-toolbar::before {
+    content: "";
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 19l7-7 3 3-7 7-3-3z'/%3E%3Cpath d='M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z'/%3E%3C/svg%3E") center / 16px no-repeat;
+}
+
+/* ── Expanded state (hover or any child focused) ── */
+.focus-toolbar:hover,
+.focus-toolbar:focus-within {
     width: auto;
-    max-width: calc(100% - 36px);
-    padding: 6px 10px;
-    background: rgba(255,255,255,0.85);
+    height: auto;
+    padding: 5px 8px;
+    border-radius: 12px;
+    overflow: visible;
+    white-space: normal;
+    gap: 4px;
+    flex-wrap: wrap;
+    max-height: 200px;
+    max-width: calc(100% - 10px);
+
+    background: rgba(255,255,255,0.93);
     border: 1px solid rgba(15,23,42,0.10);
-    border-radius: 9999px;
-    box-shadow: 0 10px 28px rgba(15,23,42,0.10);
+    box-shadow: 0 8px 28px rgba(15,23,42,0.14);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
+    cursor: default;
 }
-.focus-toolbar::-webkit-scrollbar { display: none; }
+.focus-toolbar:hover::before,
+.focus-toolbar:focus-within::before { display: none; }
 
+/* Focus ring so keyboard users see which tool is active */
+.focus-toolbar:focus-within { outline: 2px solid rgba(99,102,241,0.40); outline-offset: 3px; }
+
+/* ── Group row (horizontal inside the expanded toolbar) ── */
 .focus-toolbar-group {
     display: inline-flex;
     align-items: center;
-    gap: 2px;
-    padding: 0 4px;
+    gap: 3px;
+    padding: 1px 4px;
     border-right: 1px solid rgba(15,23,42,0.08);
+    min-width: 0;
+    flex-shrink: 0;
 }
 .focus-toolbar-group:last-child { border-right: none; }
-.focus-toolbar-group.focus-status { margin-left: auto; }
+.focus-toolbar-group:not([data-wb-toolgroup])::before { display: none; }
 
+/* ── Tool buttons ── */
 .focus-tool {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 26px;
-    height: 26px;
-    border-radius: 9999px;
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
     border: 1px solid transparent;
     background: transparent;
-    color: #0f172a;
+    color: #475569;
     cursor: pointer;
     padding: 0;
-    transition: background 120ms ease, border-color 120ms ease;
+    transition: background 100ms ease, border-color 100ms ease, color 100ms ease, box-shadow 100ms ease;
 }
 .focus-tool svg { width: 14px; height: 14px; }
-.focus-tool:hover { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.25); }
-.focus-tool[data-active="true"],
-.focus-tool.is-active {
-    background: rgba(99,102,241,0.18);
-    border-color: rgba(99,102,241,0.45);
+.focus-tool:hover {
+    background: rgba(99,102,241,0.10);
+    border-color: rgba(99,102,241,0.22);
     color: #4338ca;
 }
+.focus-tool[data-active="true"],
+.focus-tool.is-active {
+    background: #6366f1;
+    border-color: #4f46e5;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(99,102,241,0.35);
+}
 
+/* ── Color swatches ── */
 .focus-swatch {
     display: inline-block;
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     border-radius: 9999px;
     background: var(--c, #1e1e1e);
-    border: 1px solid rgba(15,23,42,0.15);
-    box-shadow: 0 0 0 1px rgba(255,255,255,0.6) inset;
+    border: 1.5px solid #ffffff;
+    box-shadow: 0 0 0 1px rgba(15,23,42,0.18);
     cursor: pointer;
     transition: transform 100ms ease, box-shadow 100ms ease;
 }
-.focus-swatch:hover { transform: scale(1.1); }
+.focus-swatch:hover { transform: scale(1.15); }
 .focus-swatch[data-active="true"],
 .focus-swatch.is-active {
-    box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--c, #6366f1);
+    transform: scale(1.2);
+    box-shadow: 0 0 0 1.5px var(--c, #6366f1);
 }
 
+/* ── Size selectors ── */
 .focus-size {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 22px;
     height: 22px;
-    border-radius: 9999px;
-    background: rgba(15,23,42,0.05);
-    border: 1px solid rgba(15,23,42,0.12);
+    border-radius: 6px;
+    background: rgba(15,23,42,0.04);
+    border: 1px solid rgba(15,23,42,0.10);
     cursor: pointer;
-    position: relative;
-    transition: background 120ms ease, border-color 120ms ease;
+    transition: background 100ms ease, border-color 100ms ease;
 }
 .focus-size::after {
     content: "";
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
     width: var(--d, 6px);
     height: var(--d, 6px);
     background: #0f172a;
     border-radius: 9999px;
 }
-.focus-size:hover { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.35); }
+.focus-size:hover { background: rgba(99,102,241,0.10); border-color: rgba(99,102,241,0.30); }
 .focus-size[data-active="true"],
 .focus-size.is-active {
-    background: rgba(99,102,241,0.18);
-    border-color: rgba(99,102,241,0.45);
+    background: #6366f1;
+    border-color: #4f46e5;
+}
+.focus-size[data-active="true"]::after,
+.focus-size.is-active::after { background: #ffffff; }
+
+/* ── Status pill inside a group ── */
+.focus-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    background: rgba(16,185,129,0.10);
+    border: 1px solid rgba(16,185,129,0.22);
+    border-radius: 9999px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #047857;
+    white-space: nowrap;
+}
+.focus-status::after {
+    content: "";
+    width: 5px; height: 5px;
+    border-radius: 9999px;
+    background: #10b981;
+    box-shadow: 0 0 0 2.5px rgba(16,185,129,0.25);
+    animation: focus-status-pulse 2.4s ease-in-out infinite;
+}
+@keyframes focus-status-pulse {
+    0%, 100% { box-shadow: 0 0 0 2.5px rgba(16,185,129,0.25); }
+    50%      { box-shadow: 0 0 0 5px rgba(16,185,129,0.08); }
+}
+.focus-status-text {
+    font-size: 10px;
+    font-weight: 600;
+    color: #047857;
+    letter-spacing: 0.02em;
 }
 
+/* ── Title input ── */
 .focus-title-input {
     border: 1px solid rgba(15,23,42,0.15);
-    background: rgba(255,255,255,0.85);
+    background: rgba(255,255,255,0.95);
     color: #0f172a;
-    border-radius: 9999px;
-    padding: 4px 10px;
-    font-size: 12px;
-    width: 140px;
+    border-radius: 7px;
+    padding: 3px 8px;
+    font-size: 11px;
+    width: 110px;
+    min-width: 80px;
     outline: none;
     transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 .focus-title-input::placeholder { color: #94a3b8; }
 .focus-title-input:focus {
     border-color: rgba(99,102,241,0.55);
-    box-shadow: 0 0 0 3px rgba(99,102,241,0.18);
+    box-shadow: 0 0 0 2.5px rgba(99,102,241,0.15);
 }
 
+/* ── Save / Open buttons ── */
 .focus-toolbar .btn,
 .focus-toolbar .btn-secondary {
-    background: rgba(99,102,241,0.12);
-    color: #4338ca;
-    border: 1px solid rgba(99,102,241,0.30);
-    border-radius: 9999px;
+    background: #6366f1;
+    color: #ffffff;
+    border: 1px solid #4f46e5;
+    border-radius: 7px;
     padding: 4px 10px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
+    box-shadow: 0 2px 5px rgba(99,102,241,0.25);
 }
 .focus-toolbar .btn:hover,
 .focus-toolbar .btn-secondary:hover {
-    background: rgba(99,102,241,0.22);
-    color: #3730a3;
+    background: #4f46e5;
+    color: #ffffff;
 }
 .focus-toolbar .btn svg,
 .focus-toolbar .btn-secondary svg { width: 12px; height: 12px; }
 
-.focus-status-text {
-    font-size: 11px;
-    color: #475569;
-    white-space: nowrap;
-    padding: 0 4px;
-}
-
+/* ── Responsive ── */
 @media (max-width: 720px) {
     .focus-header { flex-wrap: wrap; }
     .focus-formula { margin-left: 0; max-width: 100%; }
-    .focus-toolbar { gap: 4px; padding: 4px 8px; }
-    .focus-toolbar-group { padding: 0 2px; }
-    .focus-title-input { width: 100px; }
+    .focus-toolbar { bottom: 12px; }
+    .focus-toolbar:hover,
+    .focus-toolbar:focus-within { padding: 4px 6px; gap: 2px; }
+    .focus-toolbar-group { padding: 1px 2px; }
+    .focus-tool { width: 26px; height: 26px; }
+    .focus-title-input { width: 80px; min-width: 60px; font-size: 10px; }
+    .focus-toolbar .btn,
+    .focus-toolbar .btn-secondary { padding: 3px 7px; font-size: 10px; }
 }
