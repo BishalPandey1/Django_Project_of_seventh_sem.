@@ -2,39 +2,51 @@
 <div class="input-card"
      style="--input-accent: {{ color|default:'#6366f1' }}"
      data-input-card data-input-name="{{ name }}">
+    <!-- Top: label row -->
     <div class="input-card-head">
-        <div class="min-w-0 flex-1">
-            <div class="input-card-label">
-                <span class="input-card-dot"></span>
-                <span class="truncate">{{ label }}</span>
-                {% if formula %}
-                    <span class="input-card-formula ml-1">· {{ formula }}</span>
-                {% endif %}
-            </div>
+        <div class="input-card-label">
+            <span class="input-card-dot"></span>
+            <span class="truncate">{{ label }}</span>
+            {% if formula %}
+                <span class="input-card-formula">· {{ formula }}</span>
+            {% endif %}
         </div>
+        <span class="input-card-badge" data-badge="{{ name }}">{{ value }}</span>
+    </div>
+
+    <!-- Middle: slider with min / max labels -->
+    <div class="input-card-slider-row">
+        <span class="input-card-range-label input-card-range-label--min">{{ min }}</span>
+        <div class="input-card-range-track" data-range-track="{{ name }}">
+            <input type="range"
+                   name="{{ name }}_range"
+                   data-param-range="{{ name }}"
+                   min="{{ min }}" max="{{ max }}" step="{{ step }}" value="{{ value }}"
+                   hx-post="{% url 'explorer:'|add:module|add:'_update' %}"
+                   hx-trigger="input changed delay:80ms"
+                   hx-target="#module-body"
+                   hx-swap="outerHTML"
+                   hx-include="[data-input-board] input, [data-input-board] select"
+                   class="input-card-range" />
+            <div class="input-card-range-fill"></div>
+        </div>
+        <span class="input-card-range-label input-card-range-label--max">{{ max }}</span>
+    </div>
+
+    <!-- Bottom: step buttons + number input -->
+    <div class="input-card-foot">
+        <button type="button" class="input-card-step" data-step="{{ name }}" data-dir="-1"
+                aria-label="Decrease" title="Decrease by {{ step }}">−</button>
         <input type="number"
                name="{{ name }}"
-               value="{{ value }}"
-               step="{{ step }}"
+               value="{{ value }}" step="{{ step }}"
                data-param="{{ name }}"
                hx-post="{% url 'explorer:'|add:module|add:'_update' %}"
-               hx-target="#module-body"
-               hx-swap="outerHTML"
+               hx-target="#module-body" hx-swap="outerHTML"
                hx-trigger="change, keyup[key=='Enter'] from:body"
                hx-include="[data-input-board] input, [data-input-board] select"
                class="input-card-number" />
+        <button type="button" class="input-card-step" data-step="{{ name }}" data-dir="+1"
+                aria-label="Increase" title="Increase by {{ step }}">+</button>
     </div>
-    <input type="range"
-           name="{{ name }}_range"
-           data-param-range="{{ name }}"
-           min="{{ min }}"
-           max="{{ max }}"
-           step="{{ step }}"
-           value="{{ value }}"
-           hx-post="{% url 'explorer:'|add:module|add:'_update' %}"
-           hx-trigger="input changed delay:80ms"
-           hx-target="#module-body"
-           hx-swap="outerHTML"
-           hx-include="[data-input-board] input, [data-input-board] select"
-           class="input-card-range" />
 </div>
