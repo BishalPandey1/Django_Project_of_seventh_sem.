@@ -3,7 +3,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
-from ._module_common import _module_view, _module_update
+from ._module_common import _module_view, _module_update, _module_snapshot
 
 
 def _wrapped(module, template):
@@ -17,6 +17,13 @@ def _wrapped_update(module):
     @login_required
     def view(request):
         return _module_update(request, module)
+    return view
+
+
+def _wrapped_snapshot(module):
+    @login_required
+    def view(request):
+        return _module_snapshot(request, module)
     return view
 
 
@@ -35,6 +42,14 @@ derivative_update = _wrapped_update("derivative")
 integral_update   = _wrapped_update("integral")
 geometry_update   = _wrapped_update("geometry")
 transform_update  = _wrapped_update("transform")
+
+linear_snapshot     = _wrapped_snapshot("linear")
+quadratic_snapshot  = _wrapped_snapshot("quadratic")
+trig_snapshot       = _wrapped_snapshot("trig")
+derivative_snapshot = _wrapped_snapshot("derivative")
+integral_snapshot   = _wrapped_snapshot("integral")
+geometry_snapshot   = _wrapped_snapshot("geometry")
+transform_snapshot  = _wrapped_snapshot("transform")
 
 
 @login_required

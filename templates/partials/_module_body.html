@@ -1,6 +1,8 @@
 {% load explorer_extras %}
 
-<div class="space-y-6">
+<div id="module-body" class="space-y-6" data-module-page
+     data-formula="{{ formula|default:''|escape }}"
+     data-snapshot='{{ snapshot|default:"null"|escape }}'>
 
     <!-- ───── Workspace · Input (left) | Diagram (right) ───── -->
     <div class="module-grid-top">
@@ -17,28 +19,102 @@
                         <span class="board-title-h">Diagram — live plot</span>
                     </div>
                 </div>
-                <div class="board-actions">
-                    <span class="status-pill">
-                        <span class="status-dot"></span>
-                        live
-                    </span>
+                <div class="board-actions flex-wrap">
+                    {% if formula %}
+                        <button type="button"
+                                data-copy-formula
+                                class="btn btn-secondary"
+                                title="Copy the current equation to the clipboard">
+                            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            <span data-copy-formula-label>Copy f(x)</span>
+                        </button>
+                        <button type="button"
+                                data-copy-url
+                                class="btn btn-secondary"
+                                title="Copy a shareable URL with the current parameters">
+                            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M10 13a5 5 0 0 0 7.07 0l3.54-3.54a5 5 0 0 0-7.07-7.07l-1.41 1.42"/>
+                                <path d="M14 11a5 5 0 0 0-7.07 0l-3.54 3.54a5 5 0 0 0 7.07 7.07l1.41-1.42"/>
+                            </svg>
+                            Share
+                        </button>
+                    {% endif %}
+                    <button type="button" data-snapshot-save
+                            class="btn btn-secondary"
+                            title="Freeze the current curve as a faded overlay">
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <path d="M3 9h18M9 3v18"/>
+                        </svg>
+                        Snapshot
+                    </button>
+                    <button type="button" data-clear-snapshot
+                            class="btn btn-secondary {% if not snapshot %}hidden{% endif %}"
+                            title="Remove the frozen snapshot overlay">
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M18 6 6 18M6 6l12 12"/>
+                        </svg>
+                        Clear
+                    </button>
+                    <span class="status-pill"><span class="status-dot"></span>live</span>
                 </div>
             </header>
             <div class="board-body">
                 {% if insights %}
                     <div class="stat-grid" data-insights-row>
                         {% for it in insights %}
-                            <div class="stat-card" data-stat-chip="{{ it.label }}" style="--stat-accent: {{ it.accent }}">
-                                <span class="stat-label">{{ it.label }}</span>
-                                <span class="stat-value" data-stat-value title="Click to copy">{{ it.value }}</span>
+                            <div class="stat-card {% if it.bind_to %}stat-card-editable{% endif %}"
+                                 data-stat-chip="{{ it.label }}"
+                                 style="--stat-accent: {{ it.accent }}"
+                                 {% if it.bind_to %}data-bind-input="{{ it.bind_to }}"{% endif %}
+                                 {% if it.bind_value is not None %}data-bind-value="{{ it.bind_value }}"{% endif %}>
+                                <span class="stat-label">
+                                    {{ it.label }}
+                                    {% if it.bind_to %}
+                                        <span class="stat-edit-hint" aria-hidden="true">✎</span>
+                                    {% endif %}
+                                </span>
+                                <span class="stat-value" data-stat-value
+                                      {% if it.bind_to %}title="Click to edit · pushes to input «{{ it.bind_to }}»"{% else %}title="Click to copy"{% endif %}>
+                                    {{ it.value }}
+                                </span>
                             </div>
                         {% endfor %}
                     </div>
                 {% endif %}
+                {% if formula %}
+                    <div class="formula-strip">
+                        <span class="formula-strip-label">f(x)</span>
+                        <code class="formula-strip-text" data-formula-display>{{ formula }}</code>
+                    </div>
+                {% endif %}
                 {% include "partials/_plot.html" with module=module plot_json=plot_json height=420 %}
-                <p class="mt-2 text-center text-[11px] text-muted-foreground">
-                    Markers indicate intercepts and key points · axes are auto-scaled · drag sliders in the input board to redraw.
-                </p>
+                <div class="diagram-footer">
+                    <div class="coordinate-readout" data-coordinate-readout>
+                        <span class="coordinate-readout-cell">
+                            <span class="coordinate-readout-label">x</span>
+                            <span class="coordinate-readout-value" data-cursor-x>—</span>
+                        </span>
+                        <span class="coordinate-readout-cell">
+                            <span class="coordinate-readout-label">f(x)</span>
+                            <span class="coordinate-readout-value" data-cursor-y>—</span>
+                        </span>
+                        <span class="coordinate-readout-hint">hover or click the plot</span>
+                    </div>
+                    {% if snapshot %}
+                        <span class="snapshot-legend">
+                            <span class="snapshot-legend-swatch"></span>
+                            snapshot @ {{ snapshot.label|default:"previous" }}
+                        </span>
+                    {% endif %}
+                </div>
             </div>
         </section>
     </div>
@@ -81,9 +157,7 @@
                 </div>
             </div>
             <div class="board-actions">
-                <span class="status-pill">
-                    Apply pushes value back to Input
-                </span>
+                <span class="status-pill">Apply pushes value back to Input</span>
             </div>
         </header>
         <div class="board-body">

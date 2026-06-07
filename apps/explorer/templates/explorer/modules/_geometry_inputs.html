@@ -1,3 +1,4 @@
+{% include "partials/_input_toolbar.html" %}
 <div class="input-card sm:col-span-2" style="--input-accent: #ec4899">
     <div class="input-card-head">
         <div class="input-card-label">
@@ -9,7 +10,7 @@
     <select name="shape"
             hx-post="{% url 'explorer:geometry_update' %}"
             hx-target="#module-body" hx-swap="outerHTML"
-            hx-include="[name='shape']"
+            hx-include="[data-input-board] input, [data-input-board] select"
             class="select-pill">
         <option value="circle"        {% if params.shape == "circle"        %}selected{% endif %}>Circle</option>
         <option value="ellipse"       {% if params.shape == "ellipse"       %}selected{% endif %}>Ellipse</option>

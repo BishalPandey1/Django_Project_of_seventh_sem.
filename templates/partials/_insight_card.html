@@ -4,13 +4,19 @@
     </h4>
     <div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
         {% for stat in insights %}
-            <div class="glass-stat rounded-lg px-3 py-2.5"
+            <div class="glass-stat rounded-lg px-3 py-2.5 {% if stat.bind_to %}stat-card-editable{% endif %}"
+                 data-stat-chip="{{ stat.label }}"
                  data-editable-stat
                  data-stat-label="{{ stat.label }}"
                  data-stat-value="{{ stat.value }}"
-                 data-stat-accent="{{ stat.accent|default:'inherit' }}">
+                 data-stat-accent="{{ stat.accent|default:'inherit' }}"
+                 {% if stat.bind_to %}data-bind-input="{{ stat.bind_to }}"{% endif %}
+                 {% if stat.bind_value is not None %}data-bind-value="{{ stat.bind_value }}"{% endif %}>
                 <div class="text-[11px] uppercase tracking-wider text-muted-foreground">
                     {{ stat.label }}
+                    {% if stat.bind_to %}
+                        <span class="stat-edit-hint" aria-hidden="true">✎</span>
+                    {% endif %}
                 </div>
                 <div class="font-mono text-sm font-semibold tabular-nums"
                      style="color: {{ stat.accent|default:'inherit' }}">

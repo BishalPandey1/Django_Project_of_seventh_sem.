@@ -16,23 +16,25 @@
                name="{{ name }}"
                value="{{ value }}"
                step="{{ step }}"
+               data-param="{{ name }}"
                hx-post="{% url 'explorer:'|add:module|add:'_update' %}"
                hx-target="#module-body"
                hx-swap="outerHTML"
                hx-trigger="change, keyup[key=='Enter'] from:body"
-               hx-include="[name='{{ name }}']"
+               hx-include="[data-input-board] input, [data-input-board] select"
                class="input-card-number" />
     </div>
     <input type="range"
            name="{{ name }}_range"
+           data-param-range="{{ name }}"
            min="{{ min }}"
            max="{{ max }}"
            step="{{ step }}"
            value="{{ value }}"
            hx-post="{% url 'explorer:'|add:module|add:'_update' %}"
-           hx-trigger="input changed delay:80ms from:input[type=range]"
+           hx-trigger="input changed delay:80ms"
            hx-target="#module-body"
            hx-swap="outerHTML"
-           hx-include="[name='{{ name }}'], [name='{{ name }}_range']"
+           hx-include="[data-input-board] input, [data-input-board] select"
            class="input-card-range" />
 </div>

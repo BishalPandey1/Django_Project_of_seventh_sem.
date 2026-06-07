@@ -1,0 +1,62 @@
+{% comment %}
+Presets + autoplay toolbar shown at the top of every module's input board.
+
+Parameters (all optional):
+  - module:  the module slug
+  - presets: list of {name, params_json, blurb} (params_json is the
+             pre-serialized JSON used by hx-vals)
+  - bounds:  dict of param name -> (min, max, step) for autoplay
+
+Behaviour:
+  * Click a preset chip → hx-vals sets every form field, then the whole
+    #module-body is swapped via HTMX. The form is a full POST, so
+    clean() rebuilds the values from the posted params.
+  * Autoplay: pick a param, hit Play — module_features.js steps the
+    param through its (min, max, step) range and re-fires the HTMX
+    request, animating the diagram.
+{% endcomment %}
+<div class="input-toolbar" data-input-toolbar>
+    {% if presets %}
+        <div class="input-toolbar-row">
+            <span class="input-toolbar-eyebrow">Presets</span>
+            <div class="input-toolbar-chips">
+                {% for p in presets %}
+                    <button type="button"
+                            class="solver-chip preset-chip"
+                            hx-post="{% url 'explorer:'|add:module|add:'_update' %}"
+                            hx-vals='{{ p.params_json }}'
+                            hx-target="#module-body"
+                            hx-swap="outerHTML"
+                            hx-include="[data-input-board] input, [data-input-board] select"
+                            title="{{ p.blurb }}">
+                        {{ p.name }}
+                    </button>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+    {% if bounds %}
+        <div class="input-toolbar-row">
+            <span class="input-toolbar-eyebrow">Animate</span>
+            <select data-autoplay-param
+                    class="select-pill !w-auto !text-xs">
+                {% for k, spec in bounds.items %}
+                    <option value="{{ k }}" data-min="{{ spec.0 }}" data-max="{{ spec.1 }}" data-step="{{ spec.2 }}">
+                        {{ k }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button type="button" data-autoplay-button
+                    class="btn btn-primary !text-xs"
+                    title="Animate the selected parameter">
+                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" data-autoplay-icon-play>
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+                <svg class="h-3.5 w-3.5 hidden" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" data-autoplay-icon-stop>
+                    <path d="M6 5h4v14H6zM14 5h4v14h-4z"/>
+                </svg>
+                <span data-autoplay-label>Play</span>
+            </button>
+        </div>
+    {% endif %}
+</div>
