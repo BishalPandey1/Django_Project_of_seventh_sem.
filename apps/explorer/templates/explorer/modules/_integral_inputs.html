@@ -1,0 +1,41 @@
+<div class="input-card" style="--input-accent: #06b6d4">
+    <div class="input-card-head">
+        <div class="input-card-label">
+            <span class="input-card-dot"></span>
+            <span>Function</span>
+            <span class="input-card-formula ml-1">· f(x)</span>
+        </div>
+    </div>
+    <select name="fn_key"
+            hx-post="{% url 'explorer:integral_update' %}"
+            hx-target="#module-body" hx-swap="outerHTML"
+            hx-include="[name='fn_key'],[name='a'],[name='b'],[name='n'],[name='method']"
+            class="select-pill">
+        <option value="poly" {% if params.fn_key == "poly" %}selected{% endif %}>f(x) = x²/4</option>
+        <option value="quad" {% if params.fn_key == "quad" %}selected{% endif %}>f(x) = −x² + 9</option>
+        <option value="sin"  {% if params.fn_key == "sin"  %}selected{% endif %}>f(x) = 2·sin(x) + 3</option>
+        <option value="exp"  {% if params.fn_key == "exp"  %}selected{% endif %}>f(x) = e^(x/3)</option>
+    </select>
+</div>
+<div class="input-card" style="--input-accent: #a855f7">
+    <div class="input-card-head">
+        <div class="input-card-label">
+            <span class="input-card-dot"></span>
+            <span>Method</span>
+            <span class="input-card-formula ml-1">· Σ f(xᵢ) Δx</span>
+        </div>
+    </div>
+    <select name="method"
+            hx-post="{% url 'explorer:integral_update' %}"
+            hx-target="#module-body" hx-swap="outerHTML"
+            hx-include="[name='fn_key'],[name='a'],[name='b'],[name='n'],[name='method']"
+            class="select-pill">
+        <option value="left"      {% if params.method == "left"      %}selected{% endif %}>Left</option>
+        <option value="right"     {% if params.method == "right"     %}selected{% endif %}>Right</option>
+        <option value="midpoint"  {% if params.method == "midpoint"  %}selected{% endif %}>Midpoint</option>
+        <option value="trapezoid" {% if params.method == "trapezoid" %}selected{% endif %}>Trapezoid</option>
+    </select>
+</div>
+{% include "partials/_slider.html" with module=module name="a" label="a" value=params.a min=-1000 max=1000 step=0.1 color="#3b82f6" formula="lower bound" %}
+{% include "partials/_slider.html" with module=module name="b" label="b" value=params.b min=-1000 max=1000 step=0.1 color="#a855f7" formula="upper bound" %}
+{% include "partials/_slider.html" with module=module name="n" label="n" value=params.n min=1 max=10000 step=1   color="#f59e0b" formula="subintervals" %}

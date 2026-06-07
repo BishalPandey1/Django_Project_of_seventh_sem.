@@ -1,14 +1,31 @@
-<nav class="navbar">
-    <div class="container">
-        <a href="{% url 'home' %}" class="navbar-brand">Django Project</a>
-        <div class="navbar-links">
+{% comment %}
+  Legacy navbar include — used by any page that still extends the
+  old project-level base.html directly. The new app/auth layouts in
+  templates/layouts/ include the themed navbar partial instead.
+{% endcomment %}
+<header class="glass-header sticky top-0 z-30">
+    <nav class="mx-auto flex h-16 max-w-7xl items-center gap-3 px-3 sm:px-6 lg:px-8">
+        <a href="{% url 'home' %}" class="flex items-center gap-2.5">
+            <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl
+                         bg-primary text-primary-foreground font-bold shadow-sm">M</span>
+            <span class="text-base font-semibold tracking-tight text-foreground">MathViz</span>
+        </a>
+        <div class="ml-auto flex items-center gap-2">
             {% if user.is_authenticated %}
-                <span>Welcome, {{ user.username }}</span>
-                <a href="{% url 'logout' %}" class="nav-link">Logout</a>
+                <a href="{% url 'accounts:profile' %}"
+                   class="rounded-md px-3 py-2 text-sm font-medium text-foreground/80
+                          hover:bg-muted hover:text-foreground transition-colors">Profile</a>
+                <a href="{% url 'accounts:settings' %}"
+                   class="rounded-md px-3 py-2 text-sm font-medium text-foreground/80
+                          hover:bg-muted hover:text-foreground transition-colors">Settings</a>
+                <a href="{% url 'accounts:logout' %}"
+                   class="rounded-lg border border-border bg-background/50 px-3 py-2
+                          text-sm font-medium text-foreground hover:bg-muted transition-colors">Logout</a>
             {% else %}
-                <a href="{% url 'login' %}" class="nav-link">Login</a>
-                <a href="{% url 'signup' %}" class="nav-link">Sign Up</a>
+                <a href="{% url 'accounts:login' %}"
+                   class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold
+                          text-primary-foreground shadow-sm hover:shadow-md transition-all duration-200">Sign in</a>
             {% endif %}
         </div>
-    </div>
-</nav>
+    </nav>
+</header>

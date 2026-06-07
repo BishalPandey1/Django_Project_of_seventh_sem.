@@ -1,0 +1,72 @@
+{% extends "layouts/app.html" %}
+
+{% block app_title %}Explore Modules · MathViz{% endblock %}
+
+{% block app_content %}
+    <div class="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-foreground">Explore Modules</h1>
+            <p class="mt-1 text-sm text-muted-foreground">
+                Seven interactive visualizers. Drag the sliders, edit values, and watch the math update.
+            </p>
+        </div>
+        <a href="{% url 'reading:index' %}"
+           class="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium hover-elevate">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+            </svg>
+            Reading room
+        </a>
+    </div>
+
+    {% if cards %}
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {% for card in cards %}
+                <a href="{% url 'explorer:'|add:card.slug %}"
+                   class="glass group block rounded-xl p-5 hover-elevate">
+                    <div class="flex items-center gap-3">
+                        <span class="inline-flex h-10 w-10 items-center justify-center rounded-lg
+                                     bg-gradient-to-br {{ card.gradient }} text-foreground">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                {% if card.icon == "line-chart" %}
+                                    <path d="M3 3v18h18"></path>
+                                    <path d="m7 15 4-4 3 3 5-6"></path>
+                                {% elif card.icon == "parentheses" %}
+                                    <path d="M8 3H4v3a4 4 0 0 1-2 3 4 4 0 0 1 2 3v3h4"></path>
+                                    <path d="M16 3h4v3a4 4 0 0 0 2 3 4 4 0 0 0-2 3v3h-4"></path>
+                                {% elif card.icon == "waves" %}
+                                    <path d="M2 12c2 0 2-4 4-4s2 8 4 8 2-12 4-12 2 16 4 16 2-8 4-8"></path>
+                                {% elif card.icon == "trending-up" %}
+                                    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                                    <polyline points="16 7 22 7 22 13"></polyline>
+                                {% elif card.icon == "sigma" %}
+                                    <path d="M18 3H6l6 9-6 9h12"></path>
+                                {% elif card.icon == "shapes" %}
+                                    <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                                    <circle cx="17" cy="7"  r="3"></circle>
+                                    <path d="M3 17h7l3 4H3z"></path>
+                                {% else %}
+                                    <path d="M12 2 2 7l10 5 10-5z"></path>
+                                    <path d="M2 17l10 5 10-5"></path>
+                                {% endif %}
+                            </svg>
+                        </span>
+                        <div>
+                            <h2 class="text-base font-semibold text-foreground">{{ card.label }}</h2>
+                            <p class="text-xs text-muted-foreground">{{ card.group }}</p>
+                        </div>
+                    </div>
+                    <p class="mt-3 font-mono text-sm text-foreground/80">{{ card.formula }}</p>
+                    <p class="mt-2 text-xs text-muted-foreground group-hover:text-foreground">Open module →</p>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="glass rounded-xl p-10 text-center text-sm text-muted-foreground">
+            You don't have access to any modules yet. Ask your teacher to enable one, or contact the admin.
+        </div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,22 @@
+<div class="input-card sm:col-span-2" style="--input-accent: #06b6d4">
+    <div class="input-card-head">
+        <div class="input-card-label">
+            <span class="input-card-dot"></span>
+            <span>Function</span>
+            <span class="input-card-formula ml-1">· f(x)</span>
+        </div>
+    </div>
+    <select name="fn_key"
+            hx-post="{% url 'explorer:derivative_update' %}"
+            hx-target="#module-body" hx-swap="outerHTML"
+            hx-include="[name='fn_key'],[name='x0'],[name='h']"
+            class="select-pill">
+        <option value="poly"  {% if params.fn_key == "poly"  %}selected{% endif %}>f(x) = x²</option>
+        <option value="cubic" {% if params.fn_key == "cubic" %}selected{% endif %}>f(x) = x³ − 3x</option>
+        <option value="sin"   {% if params.fn_key == "sin"   %}selected{% endif %}>f(x) = sin(x)</option>
+        <option value="exp"   {% if params.fn_key == "exp"   %}selected{% endif %}>f(x) = e^(x/3)</option>
+        <option value="abs"   {% if params.fn_key == "abs"   %}selected{% endif %}>f(x) = |x|</option>
+    </select>
+</div>
+{% include "partials/_slider.html" with module=module name="x0" label="x₀" value=params.x0 min=-1000 max=1000 step=0.05 color="#3b82f6" formula="point of interest" %}
+{% include "partials/_slider.html" with module=module name="h"  label="step h" value=params.h min=0.001 max=1000 step=0.01 color="#a855f7" formula="secant step" %}

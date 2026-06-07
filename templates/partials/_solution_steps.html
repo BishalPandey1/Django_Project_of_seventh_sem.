@@ -1,0 +1,59 @@
+{% load explorer_extras %}
+<div class="solution-table-wrap">
+    <table class="solution-table" data-solution-table data-module="{{ module|default:'linear' }}">
+        <thead>
+            <tr>
+                <th class="text-center">#</th>
+                <th>Description</th>
+                <th>Formula</th>
+                <th>Substitution</th>
+                <th>Result</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for step in steps %}
+                <tr>
+                    <td class="text-center">
+                        <span class="step-num">{{ forloop.counter }}</span>
+                    </td>
+                    <td>
+                        <div class="text-sm font-medium text-foreground">{{ step.text|default:"" }}</div>
+                        {% if step.note %}
+                            <div class="mt-1 text-xs text-muted-foreground">{{ step.note }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if step.formula %}
+                            <code class="code-pill">{{ step.formula }}</code>
+                        {% else %}
+                            <span class="text-xs text-muted-foreground">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if step.substitution %}
+                            <code class="code-pill code-pill-muted">{{ step.substitution }}</code>
+                        {% else %}
+                            <span class="text-xs text-muted-foreground">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if step.result %}
+                            <code class="code-pill code-pill-result"
+                                  {% if step.result_bind %}data-bind-input="{{ step.result_bind.0 }}"{% endif %}
+                                  {% if step.result_bind.1 is not None %}data-bind-value="{{ step.result_bind.1 }}"{% endif %}
+                                  title="Click to edit &amp; re-apply">{{ step.result }}</code>
+                        {% else %}
+                            <span class="text-xs text-muted-foreground">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5" class="px-4 py-8 text-center text-sm text-muted-foreground">
+                        No solution steps available for these inputs.
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

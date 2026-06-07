@@ -2,14 +2,26 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.contrib.auth.models import User
+from django.http import HttpResponse
 from .forms import LoginForm, SignUpForm
+from .models import UserProfile
+
+
+def toggle_theme(request):
+    """HTMX endpoint — flip profile.theme, return 204."""
+    if not request.user.is_authenticated:
+        return HttpResponse(status=401)
+    from .models import get_or_create_profile
+    profile = get_or_create_profile(request.user)
+    profile.theme = "dark" if profile.theme == "light" else "light"
+    profile.save()
+    return HttpResponse(status=204)
 
 
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect('home')
-    
+        return redirect('dashboard:home')
+
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -19,26 +31,26 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 messages.success(request, f'Welcome back, {username}!')
-                return redirect('home')
+                return redirect('dashboard:home')
             else:
                 messages.error(request, 'Invalid username or password.')
     else:
         form = LoginForm()
-    
+
     return render(request, 'accounts/login.html', {'form': form})
 
 
 def signup_view(request):
     if request.user.is_authenticated:
-        return redirect('home')
-    
+        return redirect('dashboard:home')
+
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
             messages.success(request, 'Account created successfully!')
-            return redirect('home')
+            return redirect('dashboard:home')
     else:
         form = SignUpForm()
     
@@ -47,7 +59,53 @@ def signup_view(request):
 
 @login_required
 def home_view(request):
-    return render(request, 'accounts/home.html')
+    stats = [
+        {
+            'label': 'Active tools',
+            'value': '24',
+            'delta': '+3',
+            'delta_positive': True,
+            'icon_path': 'M3 3h18v6H3zM3 11h12v10H3zM17 11h4v6h-4z',
+        },
+        {
+            'label': 'Lessons completed',
+            'value': '12',
+            'delta': '+2',
+            'delta_positive': True,
+            'icon_path': 'M12 14l9-5-9-5-9 5 9 5zM12 14l6.16-3.422a12.083 12.083 0 0 1 .665 6.479A11.952 11.952 0 0 0 12 20.055a11.952 11.952 0 0 0-6.824-2.998 12.078 12.078 0 0 1 .665-6.479L12 14z',
+        },
+        {
+            'label': 'Quizzes passed',
+            'value': '8',
+            'delta': '+1',
+            'delta_positive': True,
+            'icon_path': 'M20 6L9 17l-5-5',
+        },
+        {
+            'label': 'Community members',
+            'value': '156',
+            'delta': '-4',
+            'delta_positive': False,
+            'icon_path': 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M22 21v-2a4 4 0 0 0-3-3.87M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM16 3.13a4 4 0 0 1 0 7.75',
+        },
+    ]
+    popular_tools = [
+        {'name': 'Function Grapher',  'description': 'Plot 2D and 3D functions',           'icon': 'M3 3v18h18M7 15l4-4 3 3 5-6'},
+        {'name': 'Statistics Calc.',  'description': 'Mean, median, mode analysis',        'icon': 'M3 3v18h18M7 12h4M7 16h8M7 8h12'},
+        {'name': 'Geometry Explorer', 'description': 'Interactive shapes & proofs',        'icon': 'M12 2l9 5v10l-9 5-9-5V7z'},
+        {'name': 'Equation Solver',   'description': 'Step-by-step solutions',             'icon': 'M4 4h16v4H4zM4 12h16v4H4zM4 20h10'},
+    ]
+    recent_activity = [
+        {'title': 'Completed Calculus Lesson', 'time': '2 hours ago', 'color': 'hsl(var(--primary))'},
+        {'title': 'Explored 3D Graphing Tool', 'time': '5 hours ago', 'color': 'hsl(var(--chart-3))'},
+        {'title': 'Passed Statistics Quiz',    'time': 'Yesterday',   'color': 'hsl(var(--chart-5))'},
+        {'title': 'Joined Geometry Community', 'time': '2 days ago',  'color': 'hsl(var(--chart-2))'},
+    ]
+    return render(request, 'home.html', {
+        'stats': stats,
+        'popular_tools': popular_tools,
+        'recent_activity': recent_activity,
+    })
 
 
 @login_required
@@ -59,8 +117,13 @@ def profile_view(request):
         user.email = request.POST.get('email', '')
         user.save()
         messages.success(request, 'Profile updated successfully!')
-        return redirect('profile')
-    return render(request, 'accounts/profile.html')
+        return redirect('accounts:profile')
+    recent_activity = [
+        {'title': 'Completed Calculus Lesson', 'time': '2 hours ago', 'color': 'hsl(var(--primary))'},
+        {'title': 'Explored 3D Graphing Tool', 'time': '5 hours ago', 'color': 'hsl(var(--chart-3))'},
+        {'title': 'Passed Statistics Quiz',    'time': 'Yesterday',   'color': 'hsl(var(--chart-5))'},
+    ]
+    return render(request, 'accounts/profile.html', {'recent_activity': recent_activity})
 
 
 @login_required
@@ -83,8 +146,15 @@ def settings_view(request):
                 user.set_password(new_password)
                 user.save()
                 messages.success(request, 'Password changed successfully!')
-        return redirect('settings')
-    return render(request, 'accounts/settings.html')
+        return redirect('accounts:settings')
+    settings_rows = [
+        ('email_notifications', 'Email notifications',   'Receive updates via email.'),
+        ('push_notifications',  'Push notifications',    'Get browser push notifications.'),
+        ('lesson_reminders',    'Lesson reminders',      'Reminders for incomplete lessons.'),
+        ('community_updates',   'Community updates',     'Notify when someone replies to your posts.'),
+        ('weekly_report',       'Weekly progress report','Receive weekly summary of your progress.'),
+    ]
+    return render(request, 'accounts/settings.html', {'settings_rows': settings_rows})
 
 
 @login_required
@@ -415,7 +485,7 @@ LESSONS_CONTENT = {
             'figure': '<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="300" fill="#f8f9ff"/><text x="200" y="30" font-size="16" font-weight="bold" fill="#333" text-anchor="middle">Slope Field: dy/dx = x</text><line x1="50" y1="250" x2="350" y2="250" stroke="#333" stroke-width="2"/><line x1="200" y1="20" x2="200" y2="280" stroke="#333" stroke-width="2"/><line x1="100" y1="200" x2="110" y2="190" stroke="#667eea" stroke-width="2"/><line x1="150" y1="200" x2="160" y2="190" stroke="#667eea" stroke-width="2"/><line x1="250" y1="200" x2="260" y2="210" stroke="#667eea" stroke-width="2"/><line x1="300" y1="200" x2="310" y2="210" stroke="#667eea" stroke-width="2"/><line x1="100" y1="150" x2="110" y2="140" stroke="#667eea" stroke-width="2"/><line x1="150" y1="150" x2="160" y2="140" stroke="#667eea" stroke-width="2"/><line x1="250" y1="150" x2="260" y2="160" stroke="#667eea" stroke-width="2"/><line x1="300" y1="150" x2="310" y2="160" stroke="#667eea" stroke-width="2"/><path d="M 100 220 Q 200 120 300 220" fill="none" stroke="#ff4757" stroke-width="2"/><text x="200" y="270" font-size="12" fill="#666" text-anchor="middle">Solution curves follow slope field</text></svg>',
             'types': [
                 {'name': 'Separable', 'formula': 'dy/dx = f(x)g(y)', 'description': 'Variables can be separated'},
-                {'name': 'Linear First-Order', 'formula': 'dy/dx + P(x)y = Q(x)', 'description': 'Linear in y and y\'', 'description': 'Using integrating factor'},
+                {'name': 'Linear First-Order', 'formula': 'dy/dx + P(x)y = Q(x)', 'description': 'Linear in y and y\u2032. Solved using an integrating factor.'},
                 {'name': 'Homogeneous', 'formula': 'dy/dx = F(y/x)', 'description': 'Substitution y = vx works'},
                 {'name': 'Second-Order Linear', 'formula': 'ay\'\' + by\' + cy = 0', 'description': 'Constant coefficients'}
             ],
@@ -1332,6 +1402,197 @@ def topic_detail_view(request, lesson_title, topic_title):
 
 
 @login_required
+def graph_view(request):
+    values = []
+    labels = []
+    chart_type = 'bar'
+    title = 'My Diagram'
+    error = None
+    svg = ''
+
+    if request.method == 'POST':
+        raw_values = request.POST.get('values', '').strip()
+        raw_labels = request.POST.get('labels', '').strip()
+        chart_type = request.POST.get('chart_type', 'bar')
+        title = request.POST.get('title', 'My Diagram').strip() or 'My Diagram'
+
+        try:
+            values = [float(x) for x in raw_values.split(',') if x.strip() != '']
+        except ValueError:
+            error = 'Values must be numbers separated by commas.'
+            values = []
+
+        if raw_labels:
+            labels = [x.strip() for x in raw_labels.split(',')]
+        else:
+            labels = [str(i + 1) for i in range(len(values))]
+
+        if len(labels) != len(values):
+            error = f'Number of labels ({len(labels)}) must match number of values ({len(values)}).'
+
+        if not error and values:
+            svg = _build_chart_svg(values, labels, chart_type, title)
+
+    if request.method == 'GET' and not values:
+        values = [12, 19, 8, 15, 22, 10]
+        labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+        svg = _build_chart_svg(values, labels, 'bar', 'Sample Bar Chart')
+
+    return render(request, 'accounts/graph.html', {
+        'values': ','.join(str(v) for v in values) if values else '',
+        'labels': ','.join(labels) if labels else '',
+        'chart_type': chart_type,
+        'title': title,
+        'error': error,
+        'svg': svg,
+    })
+
+
+def _build_chart_svg(values, labels, chart_type, title):
+    width = 720
+    height = 420
+    pad_left, pad_right, pad_top, pad_bottom = 60, 30, 60, 70
+    plot_w = width - pad_left - pad_right
+    plot_h = height - pad_top - pad_bottom
+
+    vmax = max(values) if values else 1
+    vmin = min(values) if values else 0
+    if vmax == vmin:
+        vmax = vmin + 1
+    value_range = vmax - vmin
+
+    parts = []
+    parts.append(
+        f'<svg viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg" '
+        f'class="w-full h-auto" role="img" aria-label="{title}">'
+    )
+
+    parts.append(
+        f'<text x="{width // 2}" y="28" font-size="18" font-weight="700" '
+        f'fill="currentColor" text-anchor="middle">{title}</text>'
+    )
+
+    parts.append(
+        f'<line x1="{pad_left}" y1="{pad_top}" x2="{pad_left}" y2="{pad_top + plot_h}" '
+        f'stroke="currentColor" stroke-width="1" opacity="0.4"/>'
+    )
+    parts.append(
+        f'<line x1="{pad_left}" y1="{pad_top + plot_h}" x2="{pad_left + plot_w}" y2="{pad_top + plot_h}" '
+        f'stroke="currentColor" stroke-width="1" opacity="0.4"/>'
+    )
+
+    grid_steps = 5
+    for i in range(grid_steps + 1):
+        y = pad_top + plot_h - (i / grid_steps) * plot_h
+        val = vmin + (i / grid_steps) * value_range
+        parts.append(
+            f'<line x1="{pad_left}" y1="{y:.1f}" x2="{pad_left + plot_w}" y2="{y:.1f}" '
+            f'stroke="currentColor" stroke-width="0.5" opacity="0.15" stroke-dasharray="3 3"/>'
+        )
+        parts.append(
+            f'<text x="{pad_left - 8}" y="{y + 4:.1f}" font-size="11" fill="currentColor" '
+            f'opacity="0.7" text-anchor="end">{val:.1f}</text>'
+        )
+
+    n = len(values)
+    if chart_type == 'bar':
+        slot_w = plot_w / n
+        bar_w = slot_w * 0.6
+        for i, v in enumerate(values):
+            x = pad_left + i * slot_w + (slot_w - bar_w) / 2
+            bar_h = ((v - vmin) / value_range) * plot_h
+            y = pad_top + plot_h - bar_h
+            parts.append(
+                f'<rect x="{x:.1f}" y="{y:.1f}" width="{bar_w:.1f}" height="{bar_h:.1f}" '
+                f'rx="4" fill="#667eea" opacity="0.85">'
+                f'<title>{labels[i]}: {v}</title></rect>'
+            )
+            parts.append(
+                f'<text x="{x + bar_w / 2:.1f}" y="{y - 6:.1f}" font-size="11" '
+                f'fill="currentColor" text-anchor="middle" font-weight="600">{v}</text>'
+            )
+            parts.append(
+                f'<text x="{x + bar_w / 2:.1f}" y="{pad_top + plot_h + 18}" font-size="11" '
+                f'fill="currentColor" text-anchor="middle" opacity="0.8">{labels[i]}</text>'
+            )
+    elif chart_type == 'line':
+        slot_w = plot_w / max(n - 1, 1)
+        points = []
+        for i, v in enumerate(values):
+            x = pad_left + i * slot_w
+            y = pad_top + plot_h - ((v - vmin) / value_range) * plot_h
+            points.append((x, y, v))
+        path_d = 'M ' + ' L '.join(f'{x:.1f},{y:.1f}' for x, y, _ in points)
+        parts.append(
+            f'<path d="{path_d}" fill="none" stroke="#667eea" stroke-width="3" '
+            f'stroke-linecap="round" stroke-linejoin="round"/>'
+        )
+        for i, (x, y, v) in enumerate(points):
+            parts.append(
+                f'<circle cx="{x:.1f}" cy="{y:.1f}" r="5" fill="#667eea" stroke="white" stroke-width="2">'
+                f'<title>{labels[i]}: {v}</title></circle>'
+            )
+            parts.append(
+                f'<text x="{x:.1f}" y="{y - 12:.1f}" font-size="11" fill="currentColor" '
+                f'text-anchor="middle" font-weight="600">{v}</text>'
+            )
+        for i, _ in enumerate(points):
+            x = pad_left + i * slot_w
+            parts.append(
+                f'<text x="{x:.1f}" y="{pad_top + plot_h + 18}" font-size="11" '
+                f'fill="currentColor" text-anchor="middle" opacity="0.8">{labels[i]}</text>'
+            )
+    elif chart_type == 'pie':
+        cx = pad_left + plot_w / 2
+        cy = pad_top + plot_h / 2
+        radius = min(plot_w, plot_h) / 2 - 20
+        total = sum(abs(v) for v in values) or 1
+        start_angle = -90
+        colors = ['#667eea', '#764ba2', '#f59e0b', '#10b981', '#ef4444', '#3b82f6',
+                  '#a855f7', '#ec4899', '#14b8a6', '#f97316']
+        for i, v in enumerate(values):
+            sweep = (abs(v) / total) * 360
+            end_angle = start_angle + sweep
+            large_arc = 1 if sweep > 180 else 0
+            x1 = cx + radius * _cos(start_angle)
+            y1 = cy + radius * _sin(start_angle)
+            x2 = cx + radius * _cos(end_angle)
+            y2 = cy + radius * _sin(end_angle)
+            d = f'M {cx:.2f},{cy:.2f} L {x1:.2f},{y1:.2f} A {radius:.2f},{radius:.2f} 0 {large_arc} 1 {x2:.2f},{y2:.2f} Z'
+            color = colors[i % len(colors)]
+            parts.append(
+                f'<path d="{d}" fill="{color}" stroke="white" stroke-width="2" opacity="0.9">'
+                f'<title>{labels[i]}: {v}</title></path>'
+            )
+            mid_angle = (start_angle + end_angle) / 2
+            lx = cx + (radius * 0.6) * _cos(mid_angle)
+            ly = cy + (radius * 0.6) * _sin(mid_angle)
+            parts.append(
+                f'<text x="{lx:.1f}" y="{ly + 4:.1f}" font-size="11" fill="white" '
+                f'text-anchor="middle" font-weight="700">{v}</text>'
+            )
+            lx2 = cx + (radius + 16) * _cos(mid_angle)
+            ly2 = cy + (radius + 16) * _sin(mid_angle)
+            parts.append(
+                f'<text x="{lx2:.1f}" y="{ly2 + 4:.1f}" font-size="11" fill="currentColor" '
+                f'text-anchor="middle">{labels[i]}</text>'
+            )
+            start_angle = end_angle
+
+    parts.append('</svg>')
+    return ''.join(parts)
+
+
+def _cos(deg):
+    import math
+    return math.cos(math.radians(deg))
+
+
+def _sin(deg):
+    import math
+    return math.sin(math.radians(deg))
+
+
 def help_view(request):
     faqs = [
         {
@@ -1362,7 +1623,14 @@ def help_view(request):
     return render(request, 'accounts/help.html', {'faqs': faqs})
 
 
+@login_required
+def modules_view(request):
+    """The legacy /modules/ URL now points at the Explore Modules hub."""
+    from apps.explorer.views import modules_index
+    return modules_index(request)
+
+
 def logout_view(request):
     logout(request)
     messages.info(request, 'You have been logged out.')
-    return redirect('login')
+    return redirect('accounts:login')

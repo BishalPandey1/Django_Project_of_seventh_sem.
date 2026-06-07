@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% block app_title %}{{ page_title|default:"OurProject" }}{% endblock %}{% endblock %}
+
+{% block body %}
+<div class="relative min-h-screen overflow-x-hidden">
+
+    <div class="aurora-bg" aria-hidden="true">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="relative z-10 flex min-h-screen flex-col">
+
+        {% include "partials/app_navbar.html" %}
+        {% include "partials/app_sidebar.html" %}
+
+        <main class="flex-1">
+            <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+
+                {% if messages %}
+                    <div class="mb-6 space-y-2">
+                        {% for message in messages %}
+                            <div class="rounded-lg border px-4 py-3 text-sm shadow-sm
+                                        {% if message.tags == 'error' %}
+                                            border-destructive/40 bg-destructive/10 text-destructive
+                                        {% elif message.tags == 'success' %}
+                                            border-chart-3/40 bg-chart-3/10 text-chart-3
+                                        {% else %}
+                                            border-primary/40 bg-primary/10 text-primary
+                                        {% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% block app_content %}{% endblock %}
+            </div>
+        </main>
+
+        <footer class="mt-auto">
+            <div class="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+                <p class="text-center text-xs text-muted-foreground">
+                    OurProject · themed with Tailwind v4.
+                </p>
+            </div>
+        </footer>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+    var sidebar    = document.getElementById('app-sidebar');
+    var overlay    = document.getElementById('sidebar-overlay');
+    var toggleBtn  = document.getElementById('sidebar-toggle');
+    var closeBtn   = document.getElementById('sidebar-close');
+    if (!sidebar || !toggleBtn) return;
+
+    function isOpen()    { return sidebar.getAttribute('data-open') === 'true'; }
+    function setOpen(v)  {
+        sidebar.setAttribute('data-open', v ? 'true' : 'false');
+        if (overlay) overlay.setAttribute('data-open', v ? 'true' : 'false');
+        toggleBtn.setAttribute('aria-expanded', v ? 'true' : 'false');
+        document.body.style.overflow = v ? 'hidden' : '';
+    }
+    function open()  { setOpen(true); }
+    function close() { setOpen(false); }
+
+    toggleBtn.addEventListener('click', function () { isOpen() ? close() : open(); });
+    if (closeBtn)  closeBtn.addEventListener('click', close);
+    if (overlay)   overlay.addEventListener('click', close);
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && isOpen()) close();
+    });
+})();
+</script>
+{{ block.super }}
+{% endblock %}

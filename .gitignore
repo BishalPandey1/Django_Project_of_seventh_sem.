@@ -50,3 +50,19 @@ coverage.xml
 
 # mypy
 .mypy_cache/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Opencode AI tool config (local only)
+opencode.json
+
+# Test / scratch files
+jsdom_test*.js
+
+# Server logs
+*.err.log
+*.out.log

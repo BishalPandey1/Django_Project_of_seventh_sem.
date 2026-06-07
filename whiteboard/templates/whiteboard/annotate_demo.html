@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annotate · MathViz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="{% static 'whiteboard/whiteboard.css' %}">
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased">
+<div class="min-h-screen w-full px-4 py-6" data-wb-root>
+    <header class="max-w-5xl mx-auto flex flex-wrap items-center gap-3 mb-4">
+        <a href="{% url 'home' %}" class="inline-flex items-center justify-center h-9 w-9 rounded-lg text-slate-600 hover:bg-slate-100" title="Home" aria-label="Home">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </a>
+        <a href="{% url 'whiteboard:whiteboard-page' %}" class="wb-back-btn inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50" title="Back to whiteboard">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            <span>Back</span>
+        </a>
+        <input type="text" data-wb-title-input
+               class="flex-1 min-w-0 max-w-md text-base font-bold tracking-tight bg-transparent border-b border-transparent hover:border-slate-200 focus:border-indigo-500 focus:outline-none px-1 py-1"
+               placeholder="Untitled annotation" value="">
+        <span class="text-xs text-slate-500"><span data-wb-status>Ready</span></span>
+        <nav class="ml-auto flex items-center gap-1 text-xs">
+            <a href="{% url 'whiteboard:whiteboard-page' %}" class="wb-mode-link">Page</a>
+            <a href="{% url 'whiteboard:whiteboard-overlay' %}" class="wb-mode-link">Overlay</a>
+            <a href="{% url 'whiteboard:whiteboard-annotate' %}" class="wb-mode-link" data-active="true">Annotate</a>
+        </nav>
+    </header>
+
+    <div class="max-w-5xl mx-auto rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+        <div class="flex flex-wrap items-center gap-2 px-2 py-2 border-b border-slate-100">
+            <div class="flex items-center gap-1 flex-wrap">
+                <button type="button" class="wb-tool-btn" data-wb-tool="pen" title="Pen (P)">Pen</button>
+                <button type="button" class="wb-tool-btn" data-wb-tool="highlighter" title="Highlighter (H)">Highlight</button>
+                <button type="button" class="wb-tool-btn" data-wb-tool="eraser" title="Eraser (E)">Erase</button>
+                <button type="button" class="wb-tool-btn" data-wb-tool="line" title="Line (L)">Line</button>
+                <button type="button" class="wb-tool-btn" data-wb-tool="arrow" title="Arrow (A)">Arrow</button>
+                <button type="button" class="wb-tool-btn" data-wb-tool="rect" title="Rectangle (R)">Rect</button>
+                <button type="button" class="wb-tool-btn" data-wb-tool="circle" title="Circle (C)">Circle</button>
+                <button type="button" class="wb-tool-btn" data-wb-tool="text" title="Text (T)">Text</button>
+                <button type="button" class="wb-tool-btn" data-wb-fill title="Toggle fill">Fill</button>
+            </div>
+            <span class="w-px h-6 bg-slate-200 mx-1"></span>
+            <div class="flex items-center gap-1 flex-wrap">
+                <button type="button" class="wb-color-swatch" data-wb-color="#1e1e1e" data-active="true" style="background-color:#1e1e1e"></button>
+                <button type="button" class="wb-color-swatch" data-wb-color="#ef4444" style="background-color:#ef4444"></button>
+                <button type="button" class="wb-color-swatch" data-wb-color="#f97316" style="background-color:#f97316"></button>
+                <button type="button" class="wb-color-swatch" data-wb-color="#eab308" style="background-color:#eab308"></button>
+                <button type="button" class="wb-color-swatch" data-wb-color="#22c55e" style="background-color:#22c55e"></button>
+                <button type="button" class="wb-color-swatch" data-wb-color="#3b82f6" style="background-color:#3b82f6"></button>
+                <button type="button" class="wb-color-swatch" data-wb-color="#8b5cf6" style="background-color:#8b5cf6"></button>
+                <button type="button" class="wb-color-swatch" data-wb-color="#ec4899" style="background-color:#ec4899"></button>
+                <button type="button" class="wb-color-swatch" data-wb-color="#14b8a6" style="background-color:#14b8a6"></button>
+            </div>
+            <span class="w-px h-6 bg-slate-200 mx-1"></span>
+            <div class="flex items-center gap-1">
+                <button type="button" class="wb-size-dot" data-wb-size="1" title="1px"><span class="wb-size-dot-inner" style="width:1px;height:1px"></span></button>
+                <button type="button" class="wb-size-dot" data-wb-size="3" data-active="true" title="3px"><span class="wb-size-dot-inner" style="width:3px;height:3px"></span></button>
+                <button type="button" class="wb-size-dot" data-wb-size="6" title="6px"><span class="wb-size-dot-inner" style="width:6px;height:6px"></span></button>
+                <button type="button" class="wb-size-dot" data-wb-size="12" title="12px"><span class="wb-size-dot-inner" style="width:12px;height:12px"></span></button>
+                <button type="button" class="wb-size-dot" data-wb-size="22" title="22px"><span class="wb-size-dot-inner" style="width:22px;height:22px"></span></button>
+            </div>
+            <span class="ml-auto flex items-center gap-1">
+                <button type="button" class="wb-tool-btn" data-wb-undo title="Undo">Undo</button>
+                <button type="button" class="wb-tool-btn" data-wb-redo title="Redo">Redo</button>
+                <button type="button" class="wb-tool-btn" data-wb-clear title="Clear">Clear</button>
+                <button type="button" class="wb-tool-btn" data-wb-save title="Save (Ctrl+S)">Save</button>
+                <button type="button" class="wb-tool-btn" data-wb-export title="Download PNG">Export</button>
+                <button type="button" class="wb-tool-btn" data-wb-new title="New">New</button>
+            </span>
+        </div>
+
+        <div class="mt-3 p-2 bg-[#f8f8f6] rounded-lg flex items-center justify-center">
+            <div class="wb-canvas-frame aspect-video w-full"
+                 data-wb-canvas-wrap
+                 data-wb-variant="page"
+                 data-wb-save-url="{% url 'whiteboard:whiteboard-save' %}"
+                 data-wb-load-url-base="{% url 'whiteboard:whiteboard-load' pk=0 %}"
+                 data-wb-delete-url-base="{% url 'whiteboard:whiteboard-delete' pk=0 %}">
+                <canvas data-wb-canvas class="wb-canvas"></canvas>
+                <input type="text" data-wb-text-input class="wb-text-input" placeholder="Type and press Enter" style="display:none;">
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{% static 'whiteboard/whiteboard.js' %}"></script>
+</body>
+</html>

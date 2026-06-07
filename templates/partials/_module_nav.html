@@ -1,0 +1,13 @@
+<nav class="flex flex-wrap items-center gap-1.5 text-xs">
+    {% for slug, label in module_nav %}
+        <a href="{% url 'explorer:'|add:slug %}"
+           class="rounded-md border px-2.5 py-1 font-medium
+                  {% if slug == module %}
+                      border-primary bg-primary text-primary-foreground
+                  {% else %}
+                      border-border bg-card text-muted-foreground hover:bg-muted
+                  {% endif %}">
+            {{ label }}
+        </a>
+    {% endfor %}
+</nav>

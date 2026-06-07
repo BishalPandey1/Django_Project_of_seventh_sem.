@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}{% block auth_title %}{{ page_title|default:"Sign in" }}{% endblock %}{% endblock %}
+
+{% block body %}
+<div class="relative min-h-screen overflow-hidden">
+
+    <div class="aurora-bg" aria-hidden="true">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="relative z-10 flex min-h-screen flex-col">
+        <header class="px-6 py-5">
+            <a href="{% url 'home' %}" class="inline-flex items-center gap-2.5 text-foreground">
+                <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl
+                             bg-primary text-primary-foreground font-bold shadow-sm">M</span>
+                <span class="text-base font-semibold tracking-tight">MathViz</span>
+            </a>
+        </header>
+
+        <main class="flex flex-1 items-center justify-center px-4 py-8 sm:px-6">
+            <div class="w-full max-w-5xl">
+                <div class="grid gap-10 lg:grid-cols-2 lg:gap-16 items-center">
+                    <div class="hidden lg:block">
+                        <span class="inline-flex h-14 w-14 items-center justify-center rounded-2xl
+                                     bg-primary/10 text-primary mb-6">
+                            <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="9"></circle>
+                                <path d="M12 3v18M3 12h18"></path>
+                            </svg>
+                        </span>
+                        <h1 class="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+                            {% block auth_heading %}Interactive Mathematics Visualization Tools{% endblock %}
+                        </h1>
+                        <p class="mt-4 text-lg text-muted-foreground">
+                            {% block auth_subheading %}
+                                Explore mathematical concepts through dynamic visualizations and interactive simulations.
+                            {% endblock %}
+                        </p>
+                    </div>
+
+                    <div class="glass rounded-2xl p-6 sm:p-8 shadow-xl w-full max-w-md mx-auto">
+                        <h2 class="text-2xl font-semibold text-foreground">
+                            {% block auth_card_title %}Welcome back{% endblock %}
+                        </h2>
+                        <p class="mt-1 text-sm text-muted-foreground">
+                            {% block auth_card_subtitle %}{% endblock %}
+                        </p>
+
+                        {% if messages %}
+                            <div class="mt-5 space-y-2">
+                                {% for message in messages %}
+                                    <div class="rounded-lg border px-3 py-2 text-sm
+                                                {% if message.tags == 'error' %}
+                                                    border-destructive/40 bg-destructive/10 text-destructive
+                                                {% elif message.tags == 'success' %}
+                                                    border-chart-3/40 bg-chart-3/10 text-chart-3
+                                                {% else %}
+                                                    border-primary/40 bg-primary/10 text-primary
+                                                {% endif %}">
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="mt-6">
+                            {% block auth_content %}{% endblock %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

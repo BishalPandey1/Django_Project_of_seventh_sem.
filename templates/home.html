@@ -1,0 +1,127 @@
+{% extends "layouts/app.html" %}
+
+{% block app_title %}Home · OurProject{% endblock %}
+
+{% block app_content %}
+    <section class="glass rounded-2xl p-8 sm:p-12 shadow-lg hover-elevate">
+        <div class="inline-flex items-center gap-2 rounded-full
+                    bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+            <span class="h-1.5 w-1.5 rounded-full bg-primary"></span>
+            Welcome back{% if user.is_authenticated %}, {{ user.username }}{% endif %}
+        </div>
+        <h1 class="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-5xl">
+            Build with a <span class="text-primary">themed</span> design system.
+        </h1>
+        <p class="mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
+            A single source of truth for color, type, radius, shadow and
+            glassmorphism — light and dark, with one Tailwind v4 file.
+        </p>
+        <div class="mt-8 flex flex-wrap items-center gap-3">
+            <a href="{% url 'accounts:lessons' %}"
+               class="inline-flex items-center gap-2 rounded-lg
+                      bg-primary px-5 py-2.5 text-sm font-semibold
+                      text-primary-foreground shadow-sm
+                      hover:shadow-md transition-all duration-200
+                      hover:-translate-y-0.5">
+                Get started
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M5 12h14M13 5l7 7-7 7"></path>
+                </svg>
+            </a>
+            <a href="{% url 'accounts:help' %}"
+               class="inline-flex items-center gap-2 rounded-lg
+                      border border-border bg-background/50 px-5 py-2.5
+                      text-sm font-semibold text-foreground
+                      hover:bg-muted transition-colors">
+                Learn more
+            </a>
+        </div>
+    </section>
+
+    <section class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {% for stat in stats %}
+            <div class="glass-stat rounded-xl p-5 shadow-sm hover-elevate
+                        transition-all duration-200 hover:-translate-y-0.5">
+                <div class="flex items-center justify-between">
+                    <span class="inline-flex h-10 w-10 items-center justify-center
+                                 rounded-lg bg-primary/10 text-primary">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="{{ stat.icon_path }}"></path>
+                        </svg>
+                    </span>
+                    <span class="text-xs font-medium
+                                 {% if stat.delta_positive %}text-chart-3{% else %}text-destructive{% endif %}">
+                        {{ stat.delta }}
+                    </span>
+                </div>
+                <p class="mt-4 text-2xl font-bold tracking-tight text-foreground">
+                    {{ stat.value }}
+                </p>
+                <p class="text-sm text-muted-foreground">{{ stat.label }}</p>
+            </div>
+        {% endfor %}
+    </section>
+
+    <section class="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div class="glass rounded-xl p-6 shadow-sm hover-elevate lg:col-span-2">
+            <h2 class="text-lg font-semibold text-foreground">Component primitives</h2>
+            <p class="mt-1 text-sm text-muted-foreground">
+                Cards, buttons, and chips built from semantic tokens only.
+            </p>
+
+            <div class="mt-5 flex flex-wrap items-center gap-3">
+                <button type="button"
+                        class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold
+                               text-primary-foreground shadow-sm
+                               hover:shadow-md transition-all duration-200
+                               hover:-translate-y-0.5">
+                    Primary action
+                </button>
+
+                <button type="button"
+                        class="rounded-lg border border-border bg-background/60
+                               px-4 py-2 text-sm font-semibold text-foreground
+                               hover:bg-muted transition-colors">
+                    Secondary
+                </button>
+
+                <button type="button"
+                        class="rounded-lg bg-accent px-4 py-2 text-sm font-semibold
+                               text-accent-foreground shadow-sm
+                               hover:shadow-md transition-all duration-200">
+                    Accent
+                </button>
+
+                <button type="button"
+                        class="rounded-lg bg-destructive px-4 py-2 text-sm font-semibold
+                               text-destructive-foreground shadow-sm
+                               hover:shadow-md transition-all duration-200">
+                    Destructive
+                </button>
+
+                <span class="rounded-full bg-primary/15 px-3 py-1 text-xs
+                             font-semibold text-primary">Badge</span>
+                <span class="rounded-full bg-muted px-3 py-1 text-xs
+                             font-medium text-muted-foreground">Muted</span>
+            </div>
+        </div>
+
+        <div class="glass rounded-xl p-6 shadow-sm hover-elevate">
+            <h2 class="text-lg font-semibold text-foreground">Form field</h2>
+            <p class="mt-1 text-sm text-muted-foreground">Input using the token set.</p>
+            <label class="mt-4 block">
+                <span class="text-sm font-medium text-foreground">Email</span>
+                <input type="email" placeholder="you@example.com"
+                       class="mt-1.5 block w-full rounded-lg border border-input
+                              bg-background/60 px-3 py-2 text-sm text-foreground
+                              placeholder:text-muted-foreground
+                              focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
+                              focus:ring-offset-background transition-shadow" />
+            </label>
+        </div>
+    </section>
+{% endblock %}

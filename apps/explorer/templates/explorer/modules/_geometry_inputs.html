@@ -1,0 +1,67 @@
+<div class="input-card sm:col-span-2" style="--input-accent: #ec4899">
+    <div class="input-card-head">
+        <div class="input-card-label">
+            <span class="input-card-dot"></span>
+            <span>Shape</span>
+            <span class="input-card-formula ml-1">· pick one of 11</span>
+        </div>
+    </div>
+    <select name="shape"
+            hx-post="{% url 'explorer:geometry_update' %}"
+            hx-target="#module-body" hx-swap="outerHTML"
+            hx-include="[name='shape']"
+            class="select-pill">
+        <option value="circle"        {% if params.shape == "circle"        %}selected{% endif %}>Circle</option>
+        <option value="ellipse"       {% if params.shape == "ellipse"       %}selected{% endif %}>Ellipse</option>
+        <option value="square"        {% if params.shape == "square"        %}selected{% endif %}>Square</option>
+        <option value="rectangle"     {% if params.shape == "rectangle"     %}selected{% endif %}>Rectangle</option>
+        <option value="triangle"      {% if params.shape == "triangle"      %}selected{% endif %}>Triangle</option>
+        <option value="rightTriangle" {% if params.shape == "rightTriangle" %}selected{% endif %}>Right triangle</option>
+        <option value="parallelogram" {% if params.shape == "parallelogram" %}selected{% endif %}>Parallelogram</option>
+        <option value="trapezoid"     {% if params.shape == "trapezoid"     %}selected{% endif %}>Trapezoid</option>
+        <option value="rhombus"       {% if params.shape == "rhombus"       %}selected{% endif %}>Rhombus</option>
+        <option value="sector"        {% if params.shape == "sector"        %}selected{% endif %}>Sector</option>
+        <option value="polygon"       {% if params.shape == "polygon"       %}selected{% endif %}>Regular polygon</option>
+    </select>
+</div>
+{% if params.shape == "circle" %}
+    {% include "partials/_slider.html" with module=module name="r"  label="Radius r"  value=params.r  min=0.1 max=15 step=0.1 color="#3b82f6" formula="distance from center" %}
+    {% include "partials/_slider.html" with module=module name="cx" label="Center x" value=params.cx min=-15 max=15 step=0.1 color="#06b6d4" formula="cx" %}
+    {% include "partials/_slider.html" with module=module name="cy" label="Center y" value=params.cy min=-15 max=15 step=0.1 color="#a855f7" formula="cy" %}
+{% elif params.shape == "ellipse" %}
+    {% include "partials/_slider.html" with module=module name="rx" label="Semi-major rx" value=params.rx min=0.1 max=15 step=0.1 color="#3b82f6" formula="x-radius" %}
+    {% include "partials/_slider.html" with module=module name="ry" label="Semi-minor ry" value=params.ry min=0.1 max=15 step=0.1 color="#a855f7" formula="y-radius" %}
+{% elif params.shape == "square" %}
+    {% include "partials/_slider.html" with module=module name="s" label="Side s" value=params.s min=0.1 max=15 step=0.1 color="#3b82f6" formula="side length" %}
+{% elif params.shape == "rectangle" %}
+    {% include "partials/_slider.html" with module=module name="L" label="Length L" value=params.L min=0.1 max=15 step=0.1 color="#3b82f6" formula="length" %}
+    {% include "partials/_slider.html" with module=module name="W" label="Width W"  value=params.W min=0.1 max=15 step=0.1 color="#a855f7" formula="width" %}
+{% elif params.shape == "triangle" %}
+    {% include "partials/_slider.html" with module=module name="Ax" label="A.x" value=params.Ax min=-15 max=15 step=0.1 color="#3b82f6" formula="vertex A" %}
+    {% include "partials/_slider.html" with module=module name="Ay" label="A.y" value=params.Ay min=-15 max=15 step=0.1 color="#06b6d4" formula="vertex A" %}
+    {% include "partials/_slider.html" with module=module name="Bx" label="B.x" value=params.Bx min=-15 max=15 step=0.1 color="#a855f7" formula="vertex B" %}
+    {% include "partials/_slider.html" with module=module name="By" label="B.y" value=params.By min=-15 max=15 step=0.1 color="#ec4899" formula="vertex B" %}
+    {% include "partials/_slider.html" with module=module name="Cx" label="C.x" value=params.Cx min=-15 max=15 step=0.1 color="#f97316" formula="vertex C" %}
+    {% include "partials/_slider.html" with module=module name="Cy" label="C.y" value=params.Cy min=-15 max=15 step=0.1 color="#10b981" formula="vertex C" %}
+{% elif params.shape == "rightTriangle" %}
+    {% include "partials/_slider.html" with module=module name="a" label="Leg a" value=params.a min=0.1 max=15 step=0.1 color="#3b82f6" formula="adjacent" %}
+    {% include "partials/_slider.html" with module=module name="b" label="Leg b" value=params.b min=0.1 max=15 step=0.1 color="#a855f7" formula="opposite" %}
+{% elif params.shape == "parallelogram" %}
+    {% include "partials/_slider.html" with module=module name="base" label="Base"     value=params.base min=0.1 max=15 step=0.1 color="#3b82f6" formula="base side" %}
+    {% include "partials/_slider.html" with module=module name="side" label="Side"     value=params.side min=0.1 max=15 step=0.1 color="#a855f7" formula="slanted side" %}
+    {% include "partials/_slider.html" with module=module name="angle_deg" label="Angle"  value=params.angle_deg min=1 max=170 step=1 color="#f59e0b" formula="degrees" %}
+{% elif params.shape == "trapezoid" %}
+    {% include "partials/_slider.html" with module=module name="a" label="Top a"    value=params.a min=0.1 max=15 step=0.1 color="#3b82f6" formula="top base" %}
+    {% include "partials/_slider.html" with module=module name="b" label="Bottom b" value=params.b min=0.1 max=15 step=0.1 color="#a855f7" formula="bottom base" %}
+    {% include "partials/_slider.html" with module=module name="h" label="Height h" value=params.h min=0.1 max=15 step=0.1 color="#10b981" formula="height" %}
+{% elif params.shape == "rhombus" %}
+    {% include "partials/_slider.html" with module=module name="p" label="Diagonal p" value=params.p min=0.1 max=15 step=0.1 color="#3b82f6" formula="horizontal diagonal" %}
+    {% include "partials/_slider.html" with module=module name="q" label="Diagonal q" value=params.q min=0.1 max=15 step=0.1 color="#a855f7" formula="vertical diagonal" %}
+{% elif params.shape == "sector" %}
+    {% include "partials/_slider.html" with module=module name="r" label="Radius r"   value=params.r min=0.1 max=15 step=0.1 color="#3b82f6" formula="radius" %}
+    {% include "partials/_slider.html" with module=module name="theta_deg" label="Angle θ" value=params.theta_deg min=1 max=359 step=1 color="#a855f7" formula="central angle" %}
+{% elif params.shape == "polygon" %}
+    {% include "partials/_slider.html" with module=module name="n" label="Sides n"     value=params.n min=3 max=20 step=1 color="#3b82f6" formula="number of sides" %}
+    {% include "partials/_slider.html" with module=module name="r_polygon" label="Circum-radius" value=params.r_polygon min=0.1 max=15 step=0.1 color="#a855f7" formula="circumradius" %}
+    {% include "partials/_slider.html" with module=module name="rotation_deg" label="Rotation"  value=params.rotation_deg min=0 max=359 step=1 color="#f59e0b" formula="rotation" %}
+{% endif %}

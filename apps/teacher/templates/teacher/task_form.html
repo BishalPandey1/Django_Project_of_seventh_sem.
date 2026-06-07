@@ -1,0 +1,15 @@
+{% extends "layouts/app.html" %}
+
+{% block app_title %}New task · Teacher{% endblock %}
+
+{% block app_content %}
+    <h1 class="mb-4 text-2xl font-bold tracking-tight text-foreground">New task</h1>
+    <form method="post" class="glass max-w-xl space-y-3 rounded-xl p-5">
+        {% csrf_token %}
+        <label class="block"><span class="text-sm font-medium">Module</span>{{ form.module_id }}</label>
+        <label class="block"><span class="text-sm font-medium">Title</span>{{ form.title }}</label>
+        <label class="block"><span class="text-sm font-medium">Problem</span>{{ form.problem }}</label>
+        <label class="block"><span class="text-sm font-medium">Due date</span>{{ form.due_date }}</label>
+        <button type="submit" class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover-elevate">Create</button>
+    </form>
+{% endblock %}

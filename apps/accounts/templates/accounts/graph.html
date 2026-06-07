@@ -1,0 +1,94 @@
+{% extends "layouts/app.html" %}
+
+{% block app_title %}{{ title }} · Graphing · MathViz{% endblock %}
+
+{% block app_content %}
+    <div class="text-center max-w-2xl mx-auto mb-8">
+        <h2 class="text-3xl font-bold tracking-tight text-foreground">Diagram Builder</h2>
+        <p class="mt-2 text-muted-foreground">
+            Enter your values and labels below to generate a diagram.
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-5">
+        <div class="glass rounded-2xl p-6 shadow-sm lg:col-span-2">
+            <h3 class="text-lg font-semibold text-foreground border-b border-border pb-3 mb-4">
+                Inputs
+            </h3>
+            <form method="POST" class="space-y-4">
+                {% csrf_token %}
+
+                <div>
+                    <label class="block text-sm font-medium text-foreground">Diagram title</label>
+                    <input type="text" name="title" value="{{ title }}" required
+                           class="mt-1.5 block w-full rounded-lg border border-input bg-background/60
+                                  px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground
+                                  focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-foreground">Chart type</label>
+                    <select name="chart_type"
+                            class="mt-1.5 block w-full rounded-lg border border-input bg-background/60
+                                   px-3 py-2 text-sm text-foreground
+                                   focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent">
+                        <option value="bar"  {% if chart_type == 'bar'  %}selected{% endif %}>Bar chart</option>
+                        <option value="line" {% if chart_type == 'line' %}selected{% endif %}>Line graph</option>
+                        <option value="pie"  {% if chart_type == 'pie'  %}selected{% endif %}>Pie chart</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-foreground">Values</label>
+                    <textarea name="values" rows="3" required
+                              placeholder="e.g. 10, 25, 18, 32, 14"
+                              class="mt-1.5 block w-full rounded-lg border border-input bg-background/60
+                                     px-3 py-2 text-sm text-foreground font-mono
+                                     placeholder:text-muted-foreground
+                                     focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent">{{ values }}</textarea>
+                    <p class="mt-1 text-xs text-muted-foreground">Numbers separated by commas.</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-foreground">Labels <span class="text-muted-foreground font-normal">(optional)</span></label>
+                    <input type="text" name="labels" value="{{ labels }}"
+                           placeholder="e.g. Jan, Feb, Mar, Apr, May"
+                           class="mt-1.5 block w-full rounded-lg border border-input bg-background/60
+                                  px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground
+                                  focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent">
+                    <p class="mt-1 text-xs text-muted-foreground">One label per value. Defaults to 1, 2, 3, …</p>
+                </div>
+
+                {% if error %}
+                    <div class="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                        {{ error }}
+                    </div>
+                {% endif %}
+
+                <button type="submit"
+                        class="w-full inline-flex justify-center items-center gap-2 rounded-lg
+                               bg-primary px-4 py-2.5 text-sm font-semibold
+                               text-primary-foreground shadow-sm
+                               hover:shadow-md transition-all duration-200
+                               hover:-translate-y-0.5">
+                    Generate diagram
+                </button>
+            </form>
+        </div>
+
+        <div class="glass rounded-2xl p-6 shadow-sm lg:col-span-3">
+            <h3 class="text-lg font-semibold text-foreground border-b border-border pb-3 mb-4">
+                Diagram
+            </h3>
+            {% if svg %}
+                <div class="rounded-lg border border-border bg-card/50 p-4 text-foreground">
+                    {{ svg|safe }}
+                </div>
+            {% else %}
+                <div class="rounded-lg border border-dashed border-border bg-card/30 p-10 text-center text-muted-foreground">
+                    Enter values and press <span class="font-semibold text-foreground">Generate diagram</span>.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

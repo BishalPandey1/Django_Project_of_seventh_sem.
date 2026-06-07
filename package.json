@@ -8,8 +8,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:css": "tailwindcss -i ./static/css/input.css -o ./static/css/output.css --watch",
-    "build:css:prod": "tailwindcss -i ./static/css/input.css -o ./static/css/output.css --minify"
+    "build:css": "node scripts/build-css.mjs --watch",
+    "build:css:prod": "node scripts/build-css.mjs --minify",
+    "build:css:once": "node scripts/build-css.mjs"
   },
   "keywords": [],
   "author": "",
@@ -18,5 +19,8 @@
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.0",
     "tailwindcss": "^4.3.0"
+  },
+  "dependencies": {
+    "@tailwindcss/typography": "^0.5.19"
   }
 }

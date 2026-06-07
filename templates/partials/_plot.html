@@ -1,0 +1,26 @@
+<div class="rounded-xl border border-border/60 bg-card/30 p-1">
+    <div id="plot-{{ module }}" style="width:100%; height:{% if height %}{{ height }}{% else %}440{% endif %}px;"></div>
+    <script type="application/json" id="plot-data-{{ module }}">{{ plot_json|safe }}</script>
+</div>
+<script>
+(function () {
+    if (!window.Plotly) return;
+    var el = document.getElementById('plot-{{ module }}');
+    var dataEl = document.getElementById('plot-data-{{ module }}');
+    if (!el || !dataEl) return;
+    try {
+        var payload = JSON.parse(dataEl.textContent);
+        var layout = Object.assign({
+            autosize: true,
+            margin: { l: 50, r: 20, t: 20, b: 40 },
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { family: 'ui-monospace, SFMono-Regular, monospace', size: 12 },
+            xaxis: { zeroline: true, gridcolor: 'rgba(15,23,42,0.08)' },
+            yaxis: { zeroline: true, gridcolor: 'rgba(15,23,42,0.08)' },
+            showlegend: false
+        }, payload.layout || {});
+        Plotly.react(el, payload.data, layout, { responsive: true, displaylogo: false });
+    } catch (e) { console.error('plot render error:', e); }
+})();
+</script>

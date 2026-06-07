@@ -1,0 +1,94 @@
+{% load explorer_extras %}
+
+<div class="space-y-6">
+
+    <!-- ───── Workspace · Input (left) | Diagram (right) ───── -->
+    <div class="module-grid-top">
+        <!-- Board 1 · Input (left) -->
+        {{ inputs_html|safe }}
+
+        <!-- Board 2 · Diagram (right) -->
+        <section class="board-section" data-board="diagram">
+            <header class="board-header">
+                <div class="board-title">
+                    <span class="board-title-badge">2</span>
+                    <div class="board-title-text">
+                        <span class="board-title-eyebrow">Step 2</span>
+                        <span class="board-title-h">Diagram — live plot</span>
+                    </div>
+                </div>
+                <div class="board-actions">
+                    <span class="status-pill">
+                        <span class="status-dot"></span>
+                        live
+                    </span>
+                </div>
+            </header>
+            <div class="board-body">
+                {% if insights %}
+                    <div class="stat-grid" data-insights-row>
+                        {% for it in insights %}
+                            <div class="stat-card" data-stat-chip="{{ it.label }}" style="--stat-accent: {{ it.accent }}">
+                                <span class="stat-label">{{ it.label }}</span>
+                                <span class="stat-value" data-stat-value title="Click to copy">{{ it.value }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% include "partials/_plot.html" with module=module plot_json=plot_json height=420 %}
+                <p class="mt-2 text-center text-[11px] text-muted-foreground">
+                    Markers indicate intercepts and key points · axes are auto-scaled · drag sliders in the input board to redraw.
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <!-- ───── Board 3 · Solution ───── -->
+    <section class="board-section" data-board="solution">
+        <header class="board-header">
+            <div class="board-title">
+                <span class="board-title-badge">3</span>
+                <div class="board-title-text">
+                    <span class="board-title-eyebrow">Step 3</span>
+                    <span class="board-title-h">Solution — step by step</span>
+                </div>
+            </div>
+            <div class="board-actions">
+                <span class="status-pill">
+                    <span class="status-dot"></span>
+                    click any result to edit &amp; recalculate
+                </span>
+                <span class="status-pill">
+                    {{ steps|length }} step{{ steps|length|pluralize }}
+                </span>
+            </div>
+        </header>
+        <div class="board-body">
+            {% with title=module|module_title %}
+                {% include "partials/_solution_steps.html" with steps=steps title=title module=module %}
+            {% endwith %}
+        </div>
+    </section>
+
+    <!-- ───── Board 4 · Solver ───── -->
+    <section class="board-section" data-board="solver">
+        <header class="board-header">
+            <div class="board-title">
+                <span class="board-title-badge">+</span>
+                <div class="board-title-text">
+                    <span class="board-title-eyebrow">Optional</span>
+                    <span class="board-title-h">Variable solver — work backwards</span>
+                </div>
+            </div>
+            <div class="board-actions">
+                <span class="status-pill">
+                    Apply pushes value back to Input
+                </span>
+            </div>
+        </header>
+        <div class="board-body">
+            {% include "partials/_variable_solver.html" with module=module solvers=solvers params=params %}
+        </div>
+    </section>
+
+</div>

@@ -1,0 +1,73 @@
+<button id="theme-toggle"
+        type="button"
+        aria-label="Toggle color theme"
+        aria-pressed="false"
+        class="group fixed bottom-5 left-5 z-50 inline-flex items-center gap-2
+               rounded-full border border-border bg-card/70 text-foreground
+               backdrop-blur-md shadow-lg
+               pl-3 pr-4 py-2.5
+               hover-elevate transition-all duration-300
+               hover:shadow-xl hover:bg-card/90">
+
+    <span class="relative inline-flex h-6 w-6 items-center justify-center">
+        <svg class="theme-icon-sun absolute inset-0 h-6 w-6
+                    transition-all duration-300 ease-out
+                    rotate-0 scale-100 opacity-100
+                    dark:-rotate-90 dark:scale-50 dark:opacity-0"
+             viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+        </svg>
+
+        <svg class="theme-icon-moon absolute inset-0 h-6 w-6
+                    transition-all duration-300 ease-out
+                    -rotate-90 scale-50 opacity-0
+                    dark:rotate-0 dark:scale-100 dark:opacity-100"
+             viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3
+                     a7 7 0 0 0 9.79 9.79z"></path>
+        </svg>
+    </span>
+
+    <span class="relative h-5 w-20 overflow-hidden text-sm font-medium">
+        <span class="theme-label-light absolute inset-0 flex items-center
+                     transition-all duration-300 ease-out
+                     translate-y-0 opacity-100
+                     dark:-translate-y-3 dark:opacity-0">
+            Light mode
+        </span>
+        <span class="theme-label-dark absolute inset-0 flex items-center
+                     transition-all duration-300 ease-out
+                     translate-y-3 opacity-0
+                     dark:translate-y-0 dark:opacity-100">
+            Dark mode
+        </span>
+    </span>
+</button>
+
+<script>
+(function () {
+    var STORAGE_KEY = 'app-theme';
+    var btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+
+    function syncAria() {
+        var isDark = document.documentElement.classList.contains('dark');
+        btn.setAttribute('aria-pressed', String(isDark));
+    }
+
+    syncAria();
+
+    btn.addEventListener('click', function () {
+        var root = document.documentElement;
+        var isDark = root.classList.toggle('dark');
+        try { localStorage.setItem(STORAGE_KEY, isDark ? 'dark' : 'light'); } catch (e) {}
+        root.style.colorScheme = isDark ? 'dark' : 'light';
+        syncAria();
+    });
+})();
+</script>

@@ -1,0 +1,84 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overlay Whiteboard · MathViz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'whiteboard/whiteboard.css' %}">
+    <style>
+      html, body { margin:0; padding:0; background:transparent; }
+      .wb-overlay-root { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:16px; box-sizing:border-box; }
+    </style>
+</head>
+<body data-wb-root>
+<div class="wb-canvas-frame"
+     style="position:relative; display:flex; flex-direction:column; aspect-ratio:16/9; max-width:100%; max-height:100%; width:100%; background:transparent; overflow:hidden;"
+     data-wb-canvas-wrap
+     data-wb-variant="overlay"
+     data-wb-board-id="{{ request.GET.drawing|default_if_none:'' }}"
+     data-wb-save-url="{% url 'whiteboard:whiteboard-save' %}"
+     data-wb-load-url-base="{% url 'whiteboard:whiteboard-load' pk=0 %}"
+     data-wb-delete-url-base="{% url 'whiteboard:whiteboard-delete' pk=0 %}">
+
+    <a href="{% url 'whiteboard:whiteboard-page' %}" class="wb-overlay-back" title="Back to whiteboard" aria-label="Back to whiteboard"
+       style="position:absolute; top:12px; left:12px; z-index:11; display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; background:rgba(255,255,255,0.96); border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.10); backdrop-filter:blur(6px); color:#475569; text-decoration:none;">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    </a>
+
+    <input type="text" data-wb-title-input placeholder="Title"
+           style="position:absolute; top:12px; right:12px; z-index:11; height:36px; width:160px; padding:0 12px; background:rgba(255,255,255,0.96); border:1px solid #e2e8f0; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.10); backdrop-filter:blur(6px); color:#0f172a; font-size:13px; outline:none;">
+
+    <div class="wb-overlay-floating"
+         style="position:absolute; top:60px; left:50%; transform:translateX(-50%); z-index:10; display:flex; align-items:center; gap:4px; padding:6px; background:rgba(255,255,255,0.96); border:1px solid #e2e8f0; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.10); backdrop-filter:blur(6px); flex-wrap:wrap; max-width:calc(100% - 200px);">
+        <button type="button" data-wb-tool="pen" class="wb-tool-btn" title="Pen (P)">P</button>
+        <button type="button" data-wb-tool="highlighter" class="wb-tool-btn" title="Highlighter (H)">H</button>
+        <button type="button" data-wb-tool="eraser" class="wb-tool-btn" title="Eraser (E)">E</button>
+        <span style="width:1px;height:20px;background:#e2e8f0;margin:0 4px"></span>
+        <button type="button" data-wb-tool="line" class="wb-tool-btn" title="Line (L)">L</button>
+        <button type="button" data-wb-tool="arrow" class="wb-tool-btn" title="Arrow (A)">A</button>
+        <button type="button" data-wb-tool="rect" class="wb-tool-btn" title="Rectangle (R)">R</button>
+        <button type="button" data-wb-tool="circle" class="wb-tool-btn" title="Circle (C)">C</button>
+        <button type="button" data-wb-tool="text" class="wb-tool-btn" title="Text (T)">T</button>
+        <button type="button" data-wb-fill class="wb-tool-btn" title="Toggle fill" aria-pressed="false">Fill</button>
+        <span style="width:1px;height:20px;background:#e2e8f0;margin:0 4px"></span>
+        <div style="display:inline-flex; align-items:center; gap:1px; flex-wrap:wrap; max-width:140px;">
+            <button type="button" class="wb-color-swatch" data-wb-color="#1e1e1e" data-active="true" style="background-color:#1e1e1e; width:18px; height:18px;" title="#1e1e1e"></button>
+            <button type="button" class="wb-color-swatch" data-wb-color="#ffffff" style="background-color:#ffffff; width:18px; height:18px;" title="#ffffff"></button>
+            <button type="button" class="wb-color-swatch" data-wb-color="#ef4444" style="background-color:#ef4444; width:18px; height:18px;" title="#ef4444"></button>
+            <button type="button" class="wb-color-swatch" data-wb-color="#f97316" style="background-color:#f97316; width:18px; height:18px;" title="#f97316"></button>
+            <button type="button" class="wb-color-swatch" data-wb-color="#eab308" style="background-color:#eab308; width:18px; height:18px;" title="#eab308"></button>
+            <button type="button" class="wb-color-swatch" data-wb-color="#22c55e" style="background-color:#22c55e; width:18px; height:18px;" title="#22c55e"></button>
+            <button type="button" class="wb-color-swatch" data-wb-color="#3b82f6" style="background-color:#3b82f6; width:18px; height:18px;" title="#3b82f6"></button>
+            <button type="button" class="wb-color-swatch" data-wb-color="#8b5cf6" style="background-color:#8b5cf6; width:18px; height:18px;" title="#8b5cf6"></button>
+            <button type="button" class="wb-color-swatch" data-wb-color="#ec4899" style="background-color:#ec4899; width:18px; height:18px;" title="#ec4899"></button>
+            <button type="button" class="wb-color-swatch" data-wb-color="#14b8a6" style="background-color:#14b8a6; width:18px; height:18px;" title="#14b8a6"></button>
+            <button type="button" class="wb-color-swatch" data-wb-color="#f59e0b" style="background-color:#f59e0b; width:18px; height:18px;" title="#f59e0b"></button>
+            <button type="button" class="wb-color-swatch" data-wb-color="#6b7280" style="background-color:#6b7280; width:18px; height:18px;" title="#6b7280"></button>
+        </div>
+        <span style="width:1px;height:20px;background:#e2e8f0;margin:0 4px"></span>
+        <div style="display:inline-flex; align-items:center; gap:1px;">
+            <button type="button" class="wb-size-dot" data-wb-size="1" title="1px" style="width:22px;height:22px;"><span class="wb-size-dot-inner" style="width:1px;height:1px"></span></button>
+            <button type="button" class="wb-size-dot" data-wb-size="3" data-active="true" title="3px" style="width:22px;height:22px;"><span class="wb-size-dot-inner" style="width:3px;height:3px"></span></button>
+            <button type="button" class="wb-size-dot" data-wb-size="6" title="6px" style="width:22px;height:22px;"><span class="wb-size-dot-inner" style="width:6px;height:6px"></span></button>
+            <button type="button" class="wb-size-dot" data-wb-size="12" title="12px" style="width:22px;height:22px;"><span class="wb-size-dot-inner" style="width:12px;height:12px"></span></button>
+            <button type="button" class="wb-size-dot" data-wb-size="22" title="22px" style="width:22px;height:22px;"><span class="wb-size-dot-inner" style="width:22px;height:22px"></span></button>
+        </div>
+        <span style="width:1px;height:20px;background:#e2e8f0;margin:0 4px"></span>
+        <button type="button" data-wb-undo class="wb-tool-btn" title="Undo (Ctrl+Z)">Undo</button>
+        <button type="button" data-wb-redo class="wb-tool-btn" title="Redo (Ctrl+Shift+Z)">Redo</button>
+        <button type="button" data-wb-clear class="wb-tool-btn" title="Clear">Clear</button>
+        <button type="button" data-wb-save class="wb-tool-btn" title="Save (Ctrl+S)">Save</button>
+        <button type="button" data-wb-export class="wb-tool-btn" title="Download PNG">Export</button>
+        <button type="button" data-wb-new class="wb-tool-btn" title="New drawing">New</button>
+    </div>
+
+    <div class="wb-overlay-canvas" style="position:absolute; inset:0;">
+        <canvas data-wb-canvas class="wb-canvas"></canvas>
+        <input type="text" data-wb-text-input class="wb-text-input" placeholder="Type and press Enter" style="display:none;">
+    </div>
+</div>
+<script src="{% static 'whiteboard/whiteboard.js' %}"></script>
+</body>
+</html>

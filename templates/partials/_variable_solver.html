@@ -1,0 +1,60 @@
+{% load explorer_extras %}
+<div class="space-y-4" data-variable-solver
+     data-update-url="{% url 'explorer:'|add:module|add:'_update' %}">
+
+    <div class="flex flex-wrap items-center gap-3">
+        <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Solve for:</span>
+        <div class="solver-chips" data-solver-targets>
+            {% for var in solvers.vars %}
+                <button type="button"
+                        data-solver-target="{{ var.symbol }}"
+                        data-solver-formula="{{ solvers.solvers|get_item:var.symbol|get_item:'formula' }}"
+                        data-solver-compute-js="{{ solvers.solvers|get_item:var.symbol|get_item:'compute_js' }}"
+                        class="solver-chip">
+                    {{ var.symbol }}
+                </button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div data-solver-formula-display>
+        {% for var in solvers.vars %}
+            {% with sol=solvers.solvers|get_item:var.symbol %}
+                <div data-formula-for="{{ var.symbol }}" class="solver-formula-box hidden">
+                    {{ sol.formula }}
+                </div>
+            {% endwith %}
+        {% endfor %}
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4" data-solver-inputs>
+        {% for var in solvers.vars %}
+            <label class="input-card" style="--input-accent: {{ var.color }}">
+                <div class="input-card-head">
+                    <div class="input-card-label">
+                        <span class="input-card-dot"></span>
+                        <span>{{ var.label }}</span>
+                        <span class="input-card-formula">({{ var.symbol }})</span>
+                    </div>
+                </div>
+                <input type="number" step="0.1"
+                       data-solver-var="{{ var.symbol }}"
+                       value="{% if params %}{{ params|get_item:var.symbol|default:0 }}{% else %}0{% endif %}"
+                       class="input-card-number w-full !text-left" />
+            </label>
+        {% endfor %}
+    </div>
+
+    <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 bg-card/40 px-4 py-3">
+        <div class="flex items-center gap-3">
+            <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Result:</span>
+            <code class="font-mono text-base font-bold text-emerald-600 dark:text-emerald-400" data-solver-result>—</code>
+        </div>
+        <button type="button" data-solver-apply class="btn btn-primary">
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 12l5 5L20 7"/>
+            </svg>
+            Apply to input
+        </button>
+    </div>
+</div>

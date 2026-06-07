@@ -1,0 +1,18 @@
+{% extends "layouts/app.html" %}
+
+{% block app_title %}Reading Room · MathViz{% endblock %}
+
+{% block app_content %}
+    <h1 class="mb-4 text-2xl font-bold tracking-tight text-foreground">Reading Room</h1>
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {% for p in pages %}
+            <a href="{% url 'reading:detail' p.slug %}"
+               class="glass block rounded-xl p-4 hover-elevate">
+                <p class="text-xs uppercase tracking-wider text-muted-foreground">{{ p.module_id|default:"general" }}</p>
+                <h2 class="mt-1 text-base font-semibold text-foreground">{{ p.title }}</h2>
+            </a>
+        {% empty %}
+            <p class="text-sm text-muted-foreground">No articles yet.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

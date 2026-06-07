@@ -1,0 +1,39 @@
+{% extends "layouts/app.html" %}
+
+{% block app_title %}Modules · MathViz{% endblock %}
+
+{% block app_content %}
+    <div class="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-foreground">Modules</h1>
+            <p class="mt-1 text-sm text-muted-foreground">
+                A collection of learning and practice modules.
+            </p>
+        </div>
+    </div>
+
+    <section
+        id="modules-container"
+        class="rounded-xl border border-dashed border-border bg-card/40 p-10 text-center">
+
+        <div class="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-xl
+                    bg-primary/10 text-primary">
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+            </svg>
+        </div>
+
+        <h2 class="mt-4 text-lg font-semibold text-foreground">No modules yet</h2>
+        <p class="mt-1 text-sm text-muted-foreground">
+            This page is ready. Tell the assistant what modules to add and they will appear here.
+        </p>
+    </section>
+{% endblock %}
+{% block app_data %}
+    {{ block.super }}
+    data-page="modules"
+{% endblock %}

@@ -1,0 +1,22 @@
+<div class="glass rounded-xl p-5">
+    <h4 class="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        Live insights
+    </h4>
+    <div class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
+        {% for stat in insights %}
+            <div class="glass-stat rounded-lg px-3 py-2.5"
+                 data-editable-stat
+                 data-stat-label="{{ stat.label }}"
+                 data-stat-value="{{ stat.value }}"
+                 data-stat-accent="{{ stat.accent|default:'inherit' }}">
+                <div class="text-[11px] uppercase tracking-wider text-muted-foreground">
+                    {{ stat.label }}
+                </div>
+                <div class="font-mono text-sm font-semibold tabular-nums"
+                     style="color: {{ stat.accent|default:'inherit' }}">
+                    {{ stat.value }}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>

@@ -1,13 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Django Project{% endblock %}</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/output.css' %}">
-</head>
-<body class="bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
-    {% block content %}{% endblock %}
-</body>
-</html>
+{% comment %}
+  App-level base. Inherits the project-level base.html so every page
+  in this app automatically gets the theme system, anti-FOUC script,
+  fonts, and the floating theme toggle. Pages usually extend
+  layouts/app.html (or layouts/auth.html) which in turn extends this.
+{% endcomment %}
+{% extends "base.html" %}

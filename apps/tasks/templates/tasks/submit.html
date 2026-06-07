@@ -1,0 +1,19 @@
+{% extends "layouts/app.html" %}
+
+{% block app_title %}Submit · {{ task.title }}{% endblock %}
+
+{% block app_content %}
+    <h1 class="mb-2 text-2xl font-bold tracking-tight text-foreground">{{ task.title }}</h1>
+    <p class="mb-1 text-sm text-muted-foreground">Module: {{ task.module_id|default:"—" }} · Due {{ task.due_date }}</p>
+    <div class="glass mb-6 rounded-xl p-5 text-sm whitespace-pre-line">{{ task.problem }}</div>
+    <form method="post" class="glass space-y-3 rounded-xl p-5">
+        {% csrf_token %}
+        <label class="block">
+            <span class="text-sm font-medium">Your answer</span>
+            {{ form.answer }}
+        </label>
+        <button type="submit" class="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover-elevate">
+            Submit
+        </button>
+    </form>
+{% endblock %}
