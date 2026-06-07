@@ -5,13 +5,16 @@
  *    data-whiteboard-toggle  — freeze the current diagram and enable the
  *                              whiteboard engine on top of it.
  *
- *  Focus mode shows the LIVE Plotly chart (moved into the overlay), so
- *  it looks pixel-identical to the module page and hover tooltips work.
- *  Freeze & draw takes a PNG snapshot for a stable drawing surface.
+ *  Focus mode takes a full-resolution PNG of the current Plotly chart
+ *  (via Plotly.toImage) and displays it as the backdrop inside the
+ *  full-screen overlay.  The frozen image exactly fills the 16:9 paper
+ *  area so it looks pixel-identical to the live chart.
  *
- *  The overlay is rendered by templates/partials/_module_body.html
- *  (look for data-focus-overlay). It is hidden by default; we toggle
- *  the [hidden] attribute to show / hide it.
+ *  Freeze & draw works the same way but additionally shows the drawing
+ *  canvas and toolbar on top of the frozen backdrop.
+ *
+ *  Re-binds the toolbar buttons after every HTMX swap so slider‑driven
+ *  diagram updates never leave the buttons orphaned.
  */
 (function () {
   "use strict";
@@ -34,6 +37,8 @@
         resolve(null);
         return;
       }
+      // Capture at 1600×900 — matches the 16:9 paper area and stays
+      // crisp on retina displays when upscaled to the display size.
       Plotly.toImage(gd, { format: "png", width: 1600, height: 900 })
         .then(function (dataUrl) {
           if (img) {
@@ -49,50 +54,11 @@
     });
   }
 
-  // ─── live‑chart move tracking ────────────────────────────
-  let plotlyOriginInfo = null;
-
-  function movePlotlyIntoOverlay(overlay) {
-    const gd = getPlotlyDiv();
-    if (!gd || overlay.contains(gd)) return;
-    const stage = overlay.querySelector(".focus-stage");
-    if (!stage) return;
-    plotlyOriginInfo = {
-      parent: gd.parentElement,
-      next: gd.nextElementSibling,
-    };
-    // Insert *before* the backdrop img so the backdrop (when visible)
-    // renders on top at the same z-index.
-    const img = overlay.querySelector("[data-focus-backdrop]");
-    if (img && img.parentElement === stage) {
-      stage.insertBefore(gd, img);
-    } else {
-      stage.appendChild(gd);
-    }
-  }
-
-  function movePlotlyBack() {
-    const gd = getPlotlyDiv();
-    if (!gd || !plotlyOriginInfo) return;
-    const { parent, next } = plotlyOriginInfo;
-    if (parent) {
-      if (next && next.parentElement === parent) {
-        parent.insertBefore(gd, next);
-      } else {
-        parent.appendChild(gd);
-      }
-    }
-    plotlyOriginInfo = null;
-  }
-
   function openOverlay() {
     const overlay = document.querySelector("[data-focus-overlay]");
     if (!overlay) return;
     overlay.hidden = false;
     document.body.classList.add("focus-open");
-    // Move the live Plotly chart into the overlay so it renders
-    // inside the full‑screen view (no frozen snapshot needed).
-    movePlotlyIntoOverlay(overlay);
     if (overlay.requestFullscreen) {
       overlay.requestFullscreen().catch(function () { /* ignored */ });
     }
@@ -103,8 +69,6 @@
     if (!overlay) return;
     overlay.hidden = true;
     document.body.classList.remove("focus-open");
-    // Restore the Plotly chart to its original container.
-    movePlotlyBack();
     if (document.fullscreenElement === overlay && document.exitFullscreen) {
       document.exitFullscreen().catch(function () { /* ignored */ });
     }
@@ -121,16 +85,18 @@
     if (isOverlayOpen()) {
       closeOverlay();
     } else {
-      // Focus mode: open the overlay and show the live chart.
-      // Hide the canvas + tools since this is view‑only.
-      openOverlay();
-      const overlay = document.querySelector("[data-focus-overlay]");
-      if (overlay) {
-        const canvas = overlay.querySelector("[data-focus-canvas-wrap], .focus-canvas-wrap");
-        if (canvas) canvas.style.display = "none";
-        const toolbar = overlay.querySelector(".focus-toolbar");
-        if (toolbar) toolbar.style.display = "none";
-      }
+      // Focus mode: freeze the diagram, open the overlay, hide canvas
+      // and toolbar (pure view‑only).
+      freezeCurrentDiagram().then(function () {
+        openOverlay();
+        const overlay = document.querySelector("[data-focus-overlay]");
+        if (overlay) {
+          const canvas = overlay.querySelector("[data-focus-canvas-wrap], .focus-canvas-wrap");
+          if (canvas) canvas.style.display = "none";
+          const toolbar = overlay.querySelector(".focus-toolbar");
+          if (toolbar) toolbar.style.display = "none";
+        }
+      });
     }
   }
 
@@ -144,7 +110,6 @@
     if (toolbar) toolbar.style.display = "";
 
     const wasOpen = isOverlayOpen();
-    // Freeze the current diagram so the drawing surface is stable.
     freezeCurrentDiagram().then(function () {
       if (!wasOpen) openOverlay();
       requestAnimationFrame(function () {
@@ -164,8 +129,8 @@
     }
   }
 
-  // ─── bind once on load ─────────────────────────────────────
-  function bind() {
+  // ─── bind / re-bind ────────────────────────────────────────
+  function reinit() {
     document.querySelectorAll("[data-focus-toggle]").forEach(function (b) {
       if (b.dataset.focusBound === "1") return;
       b.addEventListener("click", onFocusToggle);
@@ -176,7 +141,6 @@
       b.addEventListener("click", onWhiteboardToggle);
       b.dataset.focusBound = "1";
     });
-    document.addEventListener("keydown", onKeydown);
     // Pull the formula + title into the overlay for context.
     const page = document.querySelector("[data-module-page]");
     const overlay = document.querySelector("[data-focus-overlay]");
@@ -184,6 +148,15 @@
       const f = overlay.querySelector("[data-focus-formula]");
       if (f && page.dataset.formula) f.textContent = page.dataset.formula;
     }
+  }
+
+  function bind() {
+    reinit();
+    document.addEventListener("keydown", onKeydown);
+    // Re-bind after every HTMX swap so slider‑driven updates never
+    // orphan the Focus / Freeze‑&‑draw buttons.
+    document.body.addEventListener("htmx:afterSwap", reinit);
+    document.body.addEventListener("htmx:load",       reinit);
   }
 
   if (document.readyState === "loading") {
