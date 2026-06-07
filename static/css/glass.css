@@ -1429,6 +1429,31 @@ body.focus-open { overflow: hidden; }
     box-sizing: border-box;
 }
 
+/* ── Live Plotly chart (moved into the stage for Focus mode) ── */
+.focus-stage > [id^="plot-"] {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(calc(100% - 32px), calc((100% - 32px) * 16 / 9));
+    max-width: 1600px;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    max-height: calc(100% - 32px);
+    background: #ffffff;
+    border: 1px solid rgba(15,23,42,0.10);
+    border-radius: 10px;
+    box-shadow: 0 14px 44px rgba(15,23,42,0.12), 0 1px 0 rgba(255,255,255,0.6) inset;
+    z-index: 0;
+    overflow: hidden;
+}
+/* Plotly's main SVG gets the same radius so its corners clip cleanly
+   inside the parent border-radius. */
+.focus-stage > [id^="plot-"] .main-svg,
+.focus-stage > [id^="plot-"] .js-plotly-plot .plot-container {
+    border-radius: 10px;
+}
+
 /* ── Backdrop: the diagram "paper" (white sheet with border + shadow) ── */
 .focus-backdrop {
     position: absolute;
