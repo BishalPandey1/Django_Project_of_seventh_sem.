@@ -56,8 +56,11 @@ quadratic_snapshot  = _wrapped_snapshot("quadratic")
 trig_snapshot       = _wrapped_snapshot("trig")
 derivative_snapshot = _wrapped_snapshot("derivative")
 integral_snapshot   = _wrapped_snapshot("integral")
-geometry_snapshot   = _wrapped_snapshot("geometry")
-transform_snapshot  = _wrapped_snapshot("transform")
+geometry_snapshot    = _wrapped_snapshot("geometry")
+transform_snapshot   = _wrapped_snapshot("transform")
+statistics_view      = _wrapped("statistics",     "statistics")
+statistics_update    = _wrapped_update("statistics")
+statistics_snapshot  = _wrapped_snapshot("statistics")
 
 
 # ─── Module annotations (frozen-diagram whiteboard) ────────────────
@@ -266,6 +269,7 @@ def modules_index(request):
         ("integral",   "Riemann sum",           "from-green-500/20 to-green-600/10",   "sigma"),
         ("geometry",   "11 shapes",             "from-pink-500/20 to-pink-600/10",     "shapes"),
         ("transform",  "[a b; c d]·v",          "from-amber-500/20 to-amber-600/10",   "move-3d"),
+        ("statistics", "N(μ, σ²) + histogram",  "from-red-500/20 to-red-600/10",       "bar-chart"),
     ]
     for slug, formula, gradient, icon in metas:
         if profile.has_module_access(slug):

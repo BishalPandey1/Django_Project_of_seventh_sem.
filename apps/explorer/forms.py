@@ -167,6 +167,20 @@ class TransformForm(forms.Form):
         return _fill_defaults(self)
 
 
+class StatisticsForm(forms.Form):
+    mean   = forms.FloatField(min_value=-5,  max_value=5,   initial=0.0, required=False,
+                              widget=forms.NumberInput(attrs={"step": "0.1"}))
+    stddev = forms.FloatField(min_value=0.5, max_value=3,   initial=1.0, required=False,
+                              widget=forms.NumberInput(attrs={"step": "0.1"}))
+    n      = forms.IntegerField(min_value=10, max_value=200, initial=50,  required=False,
+                                widget=forms.NumberInput(attrs={"step": "1"}))
+    bins   = forms.IntegerField(min_value=5,  max_value=25,  initial=10,  required=False,
+                                widget=forms.NumberInput(attrs={"step": "1"}))
+
+    def clean(self):
+        return _fill_defaults(self)
+
+
 FORM_MAP = {
     "linear":     (LinearForm,     ["m", "b"]),
     "quadratic":  (QuadraticForm,  ["a", "b", "c"]),
@@ -175,4 +189,5 @@ FORM_MAP = {
     "integral":   (IntegralForm,   ["fn_key", "a", "b", "n", "method"]),
     "geometry":   (GeometryForm,   ["shape"]),
     "transform":  (TransformForm,  ["a", "b", "c", "d"]),
+    "statistics": (StatisticsForm, ["mean", "stddev", "n", "bins"]),
 }

@@ -23,7 +23,7 @@
         <div>
             <h1 class="text-2xl font-bold tracking-tight text-foreground">Explore Modules</h1>
             <p class="mt-1 text-sm text-muted-foreground">
-                Seven interactive visualizers. Drag the sliders, edit values, and watch the math update.
+                Eight interactive visualizers. Drag the sliders, edit values, and watch the math update.
             </p>
         </div>
         <a href="{% url 'reading:index' %}"
@@ -64,6 +64,11 @@
                                     <rect x="3" y="3" width="7" height="7" rx="1"></rect>
                                     <circle cx="17" cy="7"  r="3"></circle>
                                     <path d="M3 17h7l3 4H3z"></path>
+                                {% elif card.icon == "bar-chart" %}
+                                    <path d="M3 3v18h18"></path>
+                                    <rect x="6" y="14" width="3" height="6"></rect>
+                                    <rect x="11" y="8"  width="3" height="12"></rect>
+                                    <rect x="16" y="5"  width="3" height="15"></rect>
                                 {% else %}
                                     <path d="M12 2 2 7l10 5 10-5z"></path>
                                     <path d="M2 17l10 5 10-5"></path>

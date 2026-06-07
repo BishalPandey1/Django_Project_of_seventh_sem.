@@ -342,6 +342,76 @@ def _geometry(c):
     }
 
 
+def _statistics(c):
+    """Histogram + normal PDF overlay + mean / stddev lines."""
+    from .statistics import compute as _stats_compute
+    mean = c["mean"]
+    stddev = c["stddev"]
+    bins = c["bins"]
+    n = c["n"]
+
+    # The computed dict includes all we need.
+    bin_edges = c["bin_edges"]
+    bin_counts = c["bin_counts"]
+    pdf_x = c["pdf_x"]
+    pdf_y = c["pdf_y"]
+
+    # Scale PDF so the area under the curve matches the histogram area.
+    bin_width = (bin_edges[-1] - bin_edges[0]) / bins if bins > 1 else 1.0
+    area_factor = n * bin_width
+    scaled_pdf = [y * area_factor for y in pdf_y]
+
+    # Histogram bars as vertical scatter rectangles (Plotly trace).
+    hist_data = []
+    for i in range(bins):
+        x0, x1 = bin_edges[i], bin_edges[i + 1]
+        y = bin_counts[i]
+        hist_data.append({
+            "type": "scatter", "mode": "lines",
+            "x": [x0, x1, x1, x0, x0],
+            "y": [0, 0, y, y, 0],
+            "line": {"color": CHART[1], "width": 1},
+            "fill": "toself",
+            "fillcolor": "rgba(59,130,246,0.15)",
+            "showlegend": False,
+            "hoverinfo": "skip",
+        })
+
+    # Normal PDF curve
+    pdf_trace = {
+        "type": "scatter", "mode": "lines",
+        "x": pdf_x, "y": scaled_pdf,
+        "line": {"color": CHART[2], "width": 3},
+        "name": "N(μ, σ²)",
+        "hoverinfo": "skip",
+    }
+
+    # Mean line
+    shapes = [
+        vline_shape(mean, CHART[4], dashed=True),
+        hline_shape(0, MUTED),
+    ]
+    # ±1σ and ±2σ markers
+    for k, offset, color in [(1, stddev, CHART[5]), (2, 2 * stddev, CHART[3])]:
+        shapes.append(vline_shape(mean - offset, color, dashed=True))
+        shapes.append(vline_shape(mean + offset, color, dashed=True))
+
+    annotations = [
+        label_annotation(mean, max(bin_counts) * 0.9, f"μ = {mean:.2f}",
+                         font={"size": 12, "color": CHART[4]}),
+    ]
+
+    return {
+        "data": hist_data + [pdf_trace],
+        "layout": {
+            "shapes": shapes,
+            "annotations": annotations,
+            "xaxis_range": [mean - 4.5 * stddev, mean + 4.5 * stddev],
+            "yaxis_range": [0, max(bin_counts) * 1.25 if bin_counts else 10],
+        },
+    }
+
+
 def _transform(c):
     orig = c["original"]
     trans = c["transformed"]
@@ -381,6 +451,7 @@ _BUILDERS = {
     "integral": _integral,
     "geometry": _geometry,
     "transform": _transform,
+    "statistics": _statistics,
 }
 
 

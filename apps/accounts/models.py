@@ -14,6 +14,7 @@ MODULE_CHOICES = [
     ("integral", "Integrals"),
     ("geometry", "Geometry"),
     ("transform", "Linear Transforms"),
+    ("statistics", "Statistics"),
 ]
 
 ALL_MODULES = [m[0] for m in MODULE_CHOICES]

@@ -25,5 +25,6 @@ def module_title(slug):
         "integral":   "Integrals",
         "geometry":   "Geometry",
         "transform":  "Linear Transforms",
+        "statistics": "Statistics",
     }
     return labels.get(slug, str(slug).capitalize())

@@ -1,10 +1,10 @@
 """mathlib package — pure-Python math, no Django imports allowed."""
 
-from . import linear, quadratic, trig, derivative, integral, geometry, transform
+from . import linear, quadratic, trig, derivative, integral, geometry, transform, statistics
 from .plotly_bridge import build_plot
 
 
-ALL_MODULES = ["linear", "quadratic", "trig", "derivative", "integral", "geometry", "transform"]
+ALL_MODULES = ["linear", "quadratic", "trig", "derivative", "integral", "geometry", "transform", "statistics"]
 MODULE_LABELS = {
     "linear": "Linear Functions",
     "quadratic": "Quadratics",
@@ -13,11 +13,13 @@ MODULE_LABELS = {
     "integral": "Integrals",
     "geometry": "Geometry",
     "transform": "Linear Transforms",
+    "statistics": "Statistics",
 }
 MODULE_GROUPS = {
     "linear": "Algebra", "quadratic": "Algebra", "trig": "Algebra",
     "derivative": "Calculus", "integral": "Calculus",
     "geometry": "Geometry", "transform": "Geometry",
+    "statistics": "Statistics",
 }
 
 MODULES = {
@@ -28,6 +30,7 @@ MODULES = {
     "integral": integral,
     "geometry": geometry,
     "transform": transform,
+    "statistics": statistics,
 }
 
 

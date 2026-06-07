@@ -18,6 +18,7 @@ from apps.explorer.mathlib import (
     integral as integral_ml,
     geometry as geometry_ml,
     transform as transform_ml,
+    statistics as statistics_ml,
 )
 from apps.explorer.mathlib.geometry import SHAPE_PARAMS as GEO_PARAMS
 
@@ -93,6 +94,7 @@ DESCRIPTIONS = {
     "integral":   "Approximate ∫ₐᵇ f(x) dx with left, right, midpoint or trapezoid Riemann sums.",
     "geometry":   "Pick a shape, tweak its parameters, see area, perimeter and the rendered figure.",
     "transform":  "Apply a 2×2 matrix M = [a b; c d] to the standard basis and see where the unit square goes.",
+    "statistics": "Explore the normal distribution: adjust μ and σ, see the histogram, PDF, and summary statistics.",
 }
 
 
@@ -104,6 +106,7 @@ PRESETS_BY_MODULE = {
     "integral":   integral_ml.PRESETS,
     "geometry":   geometry_ml.PRESETS,
     "transform":  transform_ml.PRESETS,
+    "statistics": statistics_ml.PRESETS,
 }
 BOUNDS_BY_MODULE = {
     "linear":     linear_ml.BOUNDS,
@@ -113,6 +116,7 @@ BOUNDS_BY_MODULE = {
     "integral":   integral_ml.BOUNDS,
     "geometry":   geometry_ml.BOUNDS,
     "transform":  transform_ml.BOUNDS,
+    "statistics": statistics_ml.BOUNDS,
 }
 FORMULA_BY_MODULE = {
     "linear":     linear_ml.FORMULA,
@@ -122,6 +126,7 @@ FORMULA_BY_MODULE = {
     "integral":   integral_ml.FORMULA,
     "geometry":   geometry_ml.FORMULA,
     "transform":  transform_ml.FORMULA,
+    "statistics": statistics_ml.FORMULA,
 }
 
 
@@ -400,6 +405,21 @@ def _build_insights(module, params, c):
              "bind_to": "a", "bind_value": float(c['a'])},
             {"label": "Orientation",   "value": c["orientation"],    "accent": "#a855f7"},
             {"label": "Singular",      "value": "yes" if c["singular"] else "no", "accent": "#ef4444"},
+        ]
+    elif module == "statistics":
+        items = [
+            {"label": "Sample mean",   "value": f"{c['sample_mean']:.3f}", "accent": "#3b82f6",
+             "bind_to": "mean", "bind_value": float(c['mean'])},
+            {"label": "Std dev",       "value": f"{c['sample_std']:.3f}", "accent": "#a855f7",
+             "bind_to": "stddev", "bind_value": float(c['stddev'])},
+            {"label": "Variance",      "value": f"{c['variance']:.3f}", "accent": "#f97316"},
+            {"label": "Median",        "value": f"{c['median']:.3f}", "accent": "#10b981",
+             "bind_to": "mean", "bind_value": float(c['mean'])},
+            {"label": "Q₁",            "value": f"{c['q1']:.3f}", "accent": "#06b6d4"},
+            {"label": "Q₃",            "value": f"{c['q3']:.3f}", "accent": "#ec4899"},
+            {"label": "IQR",           "value": f"{c['iqr']:.3f}", "accent": "#f59e0b"},
+            {"label": "Within 1σ",     "value": f"{c['pct_1sigma']:.1f}%", "accent": "#3b82f6"},
+            {"label": "Within 2σ",     "value": f"{c['pct_2sigma']:.1f}%", "accent": "#a855f7"},
         ]
     return items
 
