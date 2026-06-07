@@ -191,25 +191,9 @@
          default; clicking the Focus or "Freeze &amp; draw" button in the diagram
          toolbar reveals it. The whiteboard engine inside is the same one used
          by the standalone /board/ page — we just point it at a different
-         [data-wb-canvas-wrap] and different save/list URLs.
-
-         Layout:
-           .focus-overlay        — full-screen dark glass (Flex column)
-             .focus-header       — top bar: title · formula · view chips · exit
-             .focus-stage        — viewport (the dark workspace)
-               .focus-grid       — optional grid overlay
-               .stage-content    — the diagram (1600×900) at native res, scaled by
-                                   JS via transform for zoom/pan
-                 .focus-backdrop — frozen PNG of the Plotly chart
-                 .focus-canvas-wrap — the whiteboard engine canvas
-               .focus-toolbar    — floating, draggable, collapsible panel
-               .focus-zoom-readout  — "100%" badge (bottom-right)
-               .focus-recent    — small panel of recently saved annotations
-               .focus-help       — keyboard shortcuts overlay -->
+         [data-wb-canvas-wrap] and different save/list URLs. -->
     <div class="focus-overlay" data-focus-overlay hidden
          data-module="{{ module|default:''|escape }}"
-         data-natural-width="1600"
-         data-natural-height="900"
          data-update-url="{% url 'explorer:index' %}{{ module|default:'' }}/update/"
          data-snapshot-url="{% url 'explorer:index' %}{{ module|default:'' }}/snapshot/"
          data-annotation-list-url="{% url 'explorer:annotation_list' module=module|default:'' %}"
@@ -227,16 +211,7 @@
                     <span class="focus-formula-label">f(x)</span>
                     <code class="focus-formula-text" data-focus-formula>{{ formula|default:'' }}</code>
                 </div>
-                <div class="focus-header-actions">
-                    <button type="button" data-focus-help
-                            class="btn btn-secondary"
-                            title="Show keyboard shortcuts (?)">
-                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/>
-                        </svg>
-                    </button>
+                <div class="focus-actions">
                     <button type="button" data-focus-toggle
                             class="btn btn-secondary"
                             title="Close focus mode (Esc)">
@@ -249,228 +224,125 @@
                 </div>
             </header>
 
-            <div class="focus-stage" data-focus-stage tabindex="0">
-                <!-- Toggleable grid overlay (sits above the dark stage,
-                     below the diagram so it never blocks the drawing). -->
-                <div class="focus-grid" data-focus-grid hidden></div>
+            <div class="focus-stage">
+                <!-- Backdrop: the frozen diagram (PNG of the current Plotly chart).
+                     Empty when entering Focus without "Freeze &amp; draw"; the live
+                     chart sits underneath via a Plotly relayout in that case. -->
+                <img class="focus-backdrop" alt="Frozen diagram"
+                     data-focus-backdrop hidden />
 
-                <!-- The diagram + canvas. Sized to the frozen PNG's natural
-                     resolution (1600×900) so the canvas matches the diagram
-                     exactly and the user can only draw on the diagram area.
-                     JS applies `transform: translate() scale()` for zoom/pan. -->
-                <div class="stage-content" data-stage-content
-                     style="width:1600px; height:900px;">
-                    <img class="focus-backdrop" alt="Frozen diagram"
-                         data-focus-backdrop hidden draggable="false" />
+                <!-- The whiteboard canvas wrap. The same [data-wb-canvas-wrap]
+                     selector the standalone whiteboard engine auto-inits on, so
+                     Whiteboard.init({wrap: this}) will pick it up. -->
+                <div class="focus-canvas-wrap" data-wb-canvas-wrap
+                     data-wb-variant="overlay"
+                     data-wb-save-url="{% url 'explorer:annotation_save' module=module|default:'' %}"
+                     data-wb-load-url-base="{% url 'explorer:annotation_list' module=module|default:'' %}"
+                     data-wb-delete-url-base="{% url 'explorer:annotation_delete' module=module|default:'' pk=0 %}">
+                    <canvas class="focus-canvas" data-wb-canvas></canvas>
+                    <input type="text" class="focus-text-input" data-wb-text-input
+                           aria-label="Text annotation" />
+                </div>
+            </div>
 
-                    <div class="focus-canvas-wrap" data-wb-canvas-wrap
-                         data-wb-variant="overlay"
-                         data-wb-fixed-width="1600"
-                         data-wb-fixed-height="900"
-                         data-wb-save-url="{% url 'explorer:annotation_save' module=module|default:'' %}"
-                         data-wb-load-url-base="{% url 'explorer:annotation_list' module=module|default:'' %}"
-                         data-wb-delete-url-base="{% url 'explorer:annotation_delete' module=module|default:'' pk=0 %}">
-                        <canvas class="focus-canvas" data-wb-canvas></canvas>
-                        <input type="text" class="focus-text-input" data-wb-text-input
-                               aria-label="Text annotation" />
-                    </div>
+            <div class="focus-toolbar">
+                <div class="focus-toolbar-group" data-wb-toolgroup="tools">
+                    <button type="button" class="focus-tool" data-wb-tool="pen"
+                            title="Pen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                        </svg></button>
+                    <button type="button" class="focus-tool" data-wb-tool="highlighter"
+                            title="Highlighter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 11l-6 6v3h9l3-3"/><path d="M22 12l-4.6 4.6a2 2 0 0 1-2.8 0L11 13l4-4 3.6 3.6a2 2 0 0 0 2.8 0L22 12z"/>
+                        </svg></button>
+                    <button type="button" class="focus-tool" data-wb-tool="eraser"
+                            title="Eraser"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M20 20H7L3 16a2 2 0 0 1 0-2.8L13.2 3l7.8 7.8L11 21"/>
+                        <path d="M22 20H11"/>
+                        </svg></button>
+                    <button type="button" class="focus-tool" data-wb-tool="line"
+                            title="Straight line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M5 19L19 5"/></svg></button>
+                    <button type="button" class="focus-tool" data-wb-tool="arrow"
+                            title="Arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M4 20L20 4M20 4h-8M20 4v8"/></svg></button>
+                    <button type="button" class="focus-tool" data-wb-tool="rect"
+                            title="Rectangle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="4" y="6" width="16" height="12" rx="1"/></svg></button>
+                    <button type="button" class="focus-tool" data-wb-tool="circle"
+                            title="Ellipse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="8"/></svg></button>
+                    <button type="button" class="focus-tool" data-wb-tool="text"
+                            title="Text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg></button>
                 </div>
 
-                <!-- Floating, draggable, collapsible tool panel. -->
-                <aside class="focus-toolbar" data-focus-toolbar>
-                    <div class="focus-toolbar-handle" data-toolbar-handle>
-                        <span class="focus-toolbar-dots" aria-hidden="true">
-                            <i></i><i></i><i></i><i></i><i></i><i></i>
-                        </span>
-                        <span class="focus-toolbar-title">Tools</span>
-                        <button type="button" class="focus-toolbar-collapse"
-                                data-toolbar-collapse
-                                title="Collapse / expand (C)">−</button>
-                    </div>
-                    <div class="focus-toolbar-body" data-toolbar-body>
-                        <div class="focus-toolbar-group">
-                            <span class="focus-toolbar-label">Tool</span>
-                            <div class="focus-toolbar-row">
-                                <button class="focus-tool" data-wb-tool="pen"
-                                        data-tool-key="p" title="Pen (P)">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
-                                    </svg>
-                                </button>
-                                <button class="focus-tool" data-wb-tool="highlighter"
-                                        data-tool-key="h" title="Highlighter (H)">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M9 11l-6 6v3h9l3-3"/><path d="M22 12l-4.6 4.6a2 2 0 0 1-2.8 0L11 13l4-4 3.6 3.6a2 2 0 0 0 2.8 0L22 12z"/>
-                                    </svg>
-                                </button>
-                                <button class="focus-tool" data-wb-tool="eraser"
-                                        data-tool-key="e" title="Eraser (E)">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M20 20H7L3 16a2 2 0 0 1 0-2.8L13.2 3l7.8 7.8L11 21"/>
-                                        <path d="M22 20H11"/>
-                                    </svg>
-                                </button>
-                                <button class="focus-tool" data-wb-tool="line"
-                                        data-tool-key="l" title="Line (L)">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M5 19L19 5"/>
-                                    </svg>
-                                </button>
-                                <button class="focus-tool" data-wb-tool="arrow"
-                                        data-tool-key="a" title="Arrow (A)">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M4 20L20 4M20 4h-8M20 4v8"/>
-                                    </svg>
-                                </button>
-                                <button class="focus-tool" data-wb-tool="rect"
-                                        data-tool-key="r" title="Rectangle (R)">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <rect x="4" y="6" width="16" height="12" rx="1"/>
-                                    </svg>
-                                </button>
-                                <button class="focus-tool" data-wb-tool="circle"
-                                        data-tool-key="c" title="Ellipse (O)">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <circle cx="12" cy="12" r="8"/>
-                                    </svg>
-                                </button>
-                                <button class="focus-tool" data-wb-tool="text"
-                                        data-tool-key="t" title="Text (T)">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M4 7V4h16v3M9 20h6M12 4v16"/>
-                                    </svg>
-                                </button>
-                                <button class="focus-tool focus-tool-pan" data-focus-pan
-                                        data-tool-key="m" title="Pan / move (M)">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="focus-toolbar-group">
-                            <span class="focus-toolbar-label">Color</span>
-                            <div class="focus-toolbar-row">
-                                <span class="focus-swatch" data-wb-color="#1e1e1e" data-active="true" style="--c:#1e1e1e"></span>
-                                <span class="focus-swatch" data-wb-color="#ef4444" style="--c:#ef4444"></span>
-                                <span class="focus-swatch" data-wb-color="#f97316" style="--c:#f97316"></span>
-                                <span class="focus-swatch" data-wb-color="#eab308" style="--c:#eab308"></span>
-                                <span class="focus-swatch" data-wb-color="#22c55e" style="--c:#22c55e"></span>
-                                <span class="focus-swatch" data-wb-color="#3b82f6" style="--c:#3b82f6"></span>
-                                <span class="focus-swatch" data-wb-color="#8b5cf6" style="--c:#8b5cf6"></span>
-                                <span class="focus-swatch" data-wb-color="#ec4899" style="--c:#ec4899"></span>
-                                <label class="focus-color-picker" title="Custom color">
-                                    <input type="color" data-wb-color-picker value="#1e1e1e" />
-                                    <span class="focus-color-picker-swatch" data-wb-color-picker-swatch></span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="focus-toolbar-group">
-                            <span class="focus-toolbar-label">Size</span>
-                            <div class="focus-toolbar-row">
-                                <span class="focus-size" data-wb-size="1"  style="--d:6px"></span>
-                                <span class="focus-size" data-wb-size="3"  data-active="true" style="--d:10px"></span>
-                                <span class="focus-size" data-wb-size="6"  style="--d:14px"></span>
-                                <span class="focus-size" data-wb-size="12" style="--d:18px"></span>
-                                <span class="focus-size" data-wb-size="22" style="--d:24px"></span>
-                            </div>
-                        </div>
-
-                        <div class="focus-toolbar-group">
-                            <span class="focus-toolbar-label">View</span>
-                            <div class="focus-toolbar-row">
-                                <button class="focus-tool focus-tool-wide" data-zoom-out title="Zoom out (−)">−</button>
-                                <button class="focus-tool focus-tool-wide" data-zoom-fit title="Fit to screen (F)">Fit</button>
-                                <button class="focus-tool focus-tool-wide" data-zoom-reset title="Actual size (0)">1:1</button>
-                                <button class="focus-tool focus-tool-wide" data-zoom-in title="Zoom in (+)">+</button>
-                                <button class="focus-tool focus-tool-wide" data-grid-toggle title="Toggle grid (G)">Grid</button>
-                            </div>
-                        </div>
-
-                        <div class="focus-toolbar-group">
-                            <span class="focus-toolbar-label">History</span>
-                            <div class="focus-toolbar-row">
-                                <button class="focus-tool focus-tool-wide" data-wb-undo title="Undo (Ctrl+Z)">Undo</button>
-                                <button class="focus-tool focus-tool-wide" data-wb-redo title="Redo (Ctrl+Y)">Redo</button>
-                                <button class="focus-tool focus-tool-wide" data-wb-clear title="Clear (Del)">Clear</button>
-                            </div>
-                        </div>
-
-                        <div class="focus-toolbar-group">
-                            <span class="focus-toolbar-label">Annotation</span>
-                            <input type="text" class="focus-title-input" data-wb-title-input
-                                   placeholder="Annotation title" maxlength="120" />
-                            <div class="focus-toolbar-row">
-                                <button class="focus-tool focus-tool-wide" data-wb-save title="Save (Ctrl+S)">Save</button>
-                                <button class="focus-tool focus-tool-wide" data-focus-recent-toggle title="Open saved (O)">Open</button>
-                                <button class="focus-tool focus-tool-wide" data-focus-export title="Export as PNG">Export</button>
-                            </div>
-                        </div>
-
-                        <div class="focus-toolbar-group focus-status">
-                            <span class="focus-status-text" data-wb-status>Ready</span>
-                        </div>
-                    </div>
-                </aside>
-
-                <!-- Zoom + pan readout (bottom-right) -->
-                <div class="focus-zoom-readout" data-zoom-readout
-                     title="Scroll to zoom · drag with Pan tool to pan">
-                    <button type="button" class="focus-zoom-btn" data-zoom-out title="Zoom out">−</button>
-                    <span class="focus-zoom-percent" data-zoom-percent>100%</span>
-                    <button type="button" class="focus-zoom-btn" data-zoom-in title="Zoom in">+</button>
-                    <button type="button" class="focus-zoom-fit" data-zoom-fit title="Fit (F)">Fit</button>
+                <div class="focus-toolbar-group" data-wb-toolgroup="history">
+                    <button type="button" class="focus-tool" data-wb-undo
+                            title="Undo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></svg></button>
+                    <button type="button" class="focus-tool" data-wb-redo
+                            title="Redo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 15-6.7L21 13"/></svg></button>
+                    <button type="button" class="focus-tool" data-wb-clear
+                            title="Clear all"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/></svg></button>
                 </div>
 
-                <!-- Recently saved annotations panel -->
-                <div class="focus-recent" data-focus-recent hidden>
-                    <div class="focus-recent-header">
-                        <span>Saved annotations</span>
-                        <button type="button" class="focus-recent-close" data-focus-recent-toggle
-                                title="Close">×</button>
-                    </div>
-                    <div class="focus-recent-list" data-focus-recent-list>
-                        <div class="focus-recent-empty" data-focus-recent-empty>
-                            No saved annotations yet — draw something and hit Save.
-                        </div>
-                    </div>
+                <div class="focus-toolbar-group" data-wb-toolgroup="colors">
+                    <span class="focus-swatch" data-wb-color="#1e1e1e" data-active="true" style="--c:#1e1e1e"></span>
+                    <span class="focus-swatch" data-wb-color="#ef4444" style="--c:#ef4444"></span>
+                    <span class="focus-swatch" data-wb-color="#f97316" style="--c:#f97316"></span>
+                    <span class="focus-swatch" data-wb-color="#eab308" style="--c:#eab308"></span>
+                    <span class="focus-swatch" data-wb-color="#22c55e" style="--c:#22c55e"></span>
+                    <span class="focus-swatch" data-wb-color="#3b82f6" style="--c:#3b82f6"></span>
+                    <span class="focus-swatch" data-wb-color="#8b5cf6" style="--c:#8b5cf6"></span>
+                    <span class="focus-swatch" data-wb-color="#ec4899" style="--c:#ec4899"></span>
                 </div>
 
-                <!-- Help / keyboard shortcuts overlay -->
-                <div class="focus-help" data-focus-help-overlay hidden>
-                    <div class="focus-help-card">
-                        <h3>Keyboard shortcuts</h3>
-                        <dl class="focus-help-grid">
-                            <dt><kbd>P</kbd> <kbd>H</kbd> <kbd>E</kbd></dt>
-                            <dd>Pen · Highlighter · Eraser</dd>
-                            <dt><kbd>L</kbd> <kbd>A</kbd> <kbd>R</kbd> <kbd>O</kbd> <kbd>T</kbd></dt>
-                            <dd>Line · Arrow · Rect · Circle · Text</dd>
-                            <dt><kbd>M</kbd></dt>
-                            <dd>Pan / move the diagram</dd>
-                            <dt><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd></dt>
-                            <dd>Undo / Redo</dd>
-                            <dt><kbd>Ctrl</kbd>+<kbd>S</kbd></dt>
-                            <dd>Save annotation</dd>
-                            <dt><kbd>Ctrl</kbd> + scroll</dt>
-                            <dd>Zoom in / out</dd>
-                            <dt><kbd>0</kbd> <kbd>F</kbd> <kbd>G</kbd> <kbd>C</kbd></dt>
-                            <dd>1:1 · Fit · Grid · Collapse toolbar</dd>
-                            <dt><kbd>Esc</kbd></dt>
-                            <dd>Exit focus mode</dd>
-                        </dl>
-                        <button type="button" class="btn btn-secondary" data-focus-help-close>Got it</button>
-                    </div>
+                <div class="focus-toolbar-group" data-wb-toolgroup="sizes">
+                    <span class="focus-size" data-wb-size="1" style="--d:6px"></span>
+                    <span class="focus-size" data-wb-size="3" data-active="true" style="--d:10px"></span>
+                    <span class="focus-size" data-wb-size="6" style="--d:14px"></span>
+                    <span class="focus-size" data-wb-size="12" style="--d:18px"></span>
+                    <span class="focus-size" data-wb-size="22" style="--d:24px"></span>
+                </div>
+
+                <div class="focus-toolbar-group" data-wb-toolgroup="actions">
+                    <input type="text" class="focus-title-input" data-wb-title-input
+                           placeholder="Annotation title" maxlength="120" />
+                    <button type="button" class="btn btn-secondary" data-wb-save
+                            title="Save this annotation to your account">
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                            <path d="M17 21v-8H7v8M7 3v5h8"/>
+                        </svg>
+                        Save
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-wb-load
+                            title="Open a previously saved annotation for this module">
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        </svg>
+                        Open
+                    </button>
+                </div>
+
+                <div class="focus-toolbar-group focus-status">
+                    <span class="focus-status-text" data-wb-status>Ready</span>
                 </div>
             </div>
         </div>
