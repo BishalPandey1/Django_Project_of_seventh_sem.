@@ -9,23 +9,26 @@
     <link rel="stylesheet" href="{% static 'css/glass.css' %}">
     <style>
         .module-back {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 6px 12px;
-            font-size: 12px; font-weight: 600;
-            color: hsl(var(--muted-foreground));
-            background: rgba(255,255,255,0.55);
-            border: 1px solid rgba(15,23,42,0.10);
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 7px 14px;
+            font-size: 13px; font-weight: 700;
+            color: #475569;
+            background: #ffffff;
+            border: 1px solid rgba(15,23,42,0.12);
             border-radius: 9999px;
+            box-shadow: 0 1px 3px rgba(15,23,42,0.06);
             transition: all 0.15s ease;
-            backdrop-filter: blur(8px);
         }
         .module-back:hover {
-            color: hsl(var(--foreground));
-            background: rgba(255,255,255,0.85);
-            transform: translateX(-2px);
+            color: #1e293b;
+            background: #f8fafc;
+            border-color: rgba(99,102,241,0.35);
+            box-shadow: 0 2px 8px rgba(99,102,241,0.15);
+            transform: translateX(-3px);
         }
-        .dark .module-back { background: rgba(15,23,42,0.55); border-color: rgba(148,163,184,0.20); }
-        .dark .module-back:hover { background: rgba(15,23,42,0.85); }
+        .module-back svg { flex-shrink: 0; }
+        .dark .module-back { background: #1e293b; color: #cbd5e1; border-color: rgba(148,163,184,0.18); }
+        .dark .module-back:hover { background: #334155; color: #f1f5f9; }
     </style>
 {% endblock %}
 
