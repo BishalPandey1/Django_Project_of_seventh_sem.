@@ -246,7 +246,7 @@
                 <div class="focus-canvas-wrap" data-wb-canvas-wrap
                      data-wb-variant="overlay"
                      data-wb-save-url="{% url 'explorer:annotation_save' module=module|default:'' %}"
-                     data-wb-load-url-base="{% url 'explorer:annotation_list' module=module|default:'' %}"
+                     data-wb-load-url-base="{% url 'explorer:annotation_load' module=module|default:'' pk=0 %}"
                      data-wb-delete-url-base="{% url 'explorer:annotation_delete' module=module|default:'' pk=0 %}">
                     <canvas class="focus-canvas" data-wb-canvas></canvas>
                     <input type="text" class="focus-text-input" data-wb-text-input

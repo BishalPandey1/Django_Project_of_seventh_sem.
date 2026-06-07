@@ -92,7 +92,8 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="nav-item">
+                    <a href="{% url 'explorer:statistics' %}"
+                       class="nav-item {% if request.resolver_match.url_name == 'statistics' %}nav-item-active{% endif %}">
                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <rect x="3" y="12" width="4" height="9"></rect>
@@ -103,7 +104,8 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="nav-item">
+                    <a href="{% url 'explorer:geometry' %}"
+                       class="nav-item {% if request.resolver_match.url_name == 'geometry' %}nav-item-active{% endif %}">
                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <circle cx="12" cy="12" r="9"></circle>

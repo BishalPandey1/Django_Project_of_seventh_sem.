@@ -10,170 +10,195 @@
     <link rel="stylesheet" href="{% static 'whiteboard/whiteboard.css' %}">
 </head>
 <body class="bg-slate-50 text-slate-900 antialiased">
-<div class="flex flex-col h-screen w-screen" data-wb-root>
-    <header class="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-white border-b border-slate-200 shadow-sm shrink-0">
-        <div class="flex items-center gap-3 min-w-0">
-            <a href="{% url 'home' %}" class="shrink-0 inline-flex items-center justify-center h-8 w-8 rounded-lg text-slate-600 hover:bg-slate-100" title="Home" aria-label="Home">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            </a>
-            <a href="{% url 'home' %}" class="wb-back-btn inline-flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50" title="Back to dashboard">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-                <span>Back</span>
-            </a>
-            <input type="text" data-wb-title-input
-                   class="min-w-0 max-w-xs text-base font-bold tracking-tight bg-transparent border-b border-transparent hover:border-slate-200 focus:border-indigo-500 focus:outline-none px-1 py-0.5"
-                   placeholder="Untitled drawing"
-                   value="">
-            <span class="text-xs text-slate-500"><span data-wb-status>Ready</span></span>
-        </div>
-        <nav class="flex items-center gap-1 text-xs">
-            <a href="{% url 'whiteboard:whiteboard-page' %}" class="wb-mode-link" data-active="true">Page</a>
-            <a href="{% url 'whiteboard:whiteboard-overlay' %}" class="wb-mode-link">Overlay</a>
-            <a href="{% url 'whiteboard:whiteboard-annotate' %}" class="wb-mode-link">Annotate</a>
-        </nav>
-        <div class="flex items-center gap-2 text-[11px] text-slate-500 hidden md:flex">
-            <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">P</kbd> pen ·
-            <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">H</kbd> highlight ·
-            <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">E</kbd> erase ·
-            <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">L</kbd> line ·
-            <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">A</kbd> arrow ·
-            <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">R</kbd> rect ·
-            <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">C</kbd> circle ·
-            <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">T</kbd> text ·
-            <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">⌘Z</kbd> undo ·
-            <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">⌘S</kbd> save
-        </div>
-    </header>
+<div class="relative min-h-screen overflow-x-hidden">
+    {% include "partials/app_navbar.html" %}
+    {% include "partials/app_sidebar.html" %}
 
-    <main class="flex flex-1 min-h-0">
-        <aside class="flex flex-col items-center gap-1 p-2 border-r border-slate-200 bg-white wb-toolbar-left shrink-0">
-            <button type="button" data-wb-tool="pen" class="wb-tool-btn" title="Pen (P)" aria-label="Pen">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/></svg>
-            </button>
-            <button type="button" data-wb-tool="highlighter" class="wb-tool-btn" title="Highlighter (H)" aria-label="Highlighter">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l-6 6v3h9l3-3"/><path d="M22 12l-4.6 4.6a2 2 0 0 1-2.8 0L11 13l4-4 3.6 3.6a2 2 0 0 1 0 2.8z"/></svg>
-            </button>
-            <button type="button" data-wb-tool="eraser" class="wb-tool-btn" title="Eraser (E)" aria-label="Eraser">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3a1 1 0 0 1 0-1.4l9.6-9.6a1 1 0 0 1 1.4 0l5.6 5.6a1 1 0 0 1 0 1.4L13 19"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
-            </button>
-            <hr class="w-6 border-slate-200 my-1">
-            <button type="button" data-wb-tool="line" class="wb-tool-btn" title="Line (L)" aria-label="Line">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="19" x2="19" y2="5"/></svg>
-            </button>
-            <button type="button" data-wb-tool="arrow" class="wb-tool-btn" title="Arrow (A)" aria-label="Arrow">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-            </button>
-            <button type="button" data-wb-tool="rect" class="wb-tool-btn" title="Rectangle (R)" aria-label="Rectangle">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-            </button>
-            <button type="button" data-wb-tool="circle" class="wb-tool-btn" title="Circle (C)" aria-label="Circle">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>
-            </button>
-            <button type="button" data-wb-tool="text" class="wb-tool-btn" title="Text (T)" aria-label="Text">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
-            </button>
-            <hr class="w-6 border-slate-200 my-1">
-            <button type="button" data-wb-fill class="wb-tool-btn" title="Toggle fill" aria-label="Toggle fill" aria-pressed="false">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z"/><path d="m5 2 5 5"/><path d="M2 13h15"/><path d="M22 20a2 2 0 1 1-4 0c0-1.6 1.7-2.4 2-4 .3 1.6 2 2.4 2 4Z"/></svg>
-            </button>
-            <hr class="w-6 border-slate-200 my-1">
-            <button type="button" data-wb-undo class="wb-tool-btn" title="Undo (Ctrl+Z)" aria-label="Undo">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></svg>
-            </button>
-            <button type="button" data-wb-redo class="wb-tool-btn" title="Redo (Ctrl+Shift+Z)" aria-label="Redo">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 15-6.7L21 13"/></svg>
-            </button>
-            <button type="button" data-wb-clear class="wb-tool-btn" title="Clear all" aria-label="Clear">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            </button>
-            <hr class="w-6 border-slate-200 my-1">
-            <button type="button" data-wb-new class="wb-tool-btn" title="New drawing" aria-label="New drawing">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-            </button>
-            <button type="button" data-wb-export class="wb-tool-btn" title="Download PNG" aria-label="Download PNG">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            </button>
-            <button type="button" data-wb-save class="wb-tool-btn" title="Save (Ctrl+S)" aria-label="Save">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-            </button>
-        </aside>
-
-        <section class="flex-1 flex flex-col min-w-0">
-            <div class="flex flex-wrap items-center gap-3 px-3 py-2 border-b border-slate-200 bg-white wb-toolbar-top shrink-0">
-                <div class="flex items-center gap-1 flex-wrap" data-wb-color-group>
-                    <button type="button" class="wb-color-swatch" data-wb-color="#1e1e1e" data-active="true" style="background-color:#1e1e1e" title="#1e1e1e"></button>
-                    <button type="button" class="wb-color-swatch" data-wb-color="#ffffff" style="background-color:#ffffff" title="#ffffff"></button>
-                    <button type="button" class="wb-color-swatch" data-wb-color="#ef4444" style="background-color:#ef4444" title="#ef4444"></button>
-                    <button type="button" class="wb-color-swatch" data-wb-color="#f97316" style="background-color:#f97316" title="#f97316"></button>
-                    <button type="button" class="wb-color-swatch" data-wb-color="#eab308" style="background-color:#eab308" title="#eab308"></button>
-                    <button type="button" class="wb-color-swatch" data-wb-color="#22c55e" style="background-color:#22c55e" title="#22c55e"></button>
-                    <button type="button" class="wb-color-swatch" data-wb-color="#3b82f6" style="background-color:#3b82f6" title="#3b82f6"></button>
-                    <button type="button" class="wb-color-swatch" data-wb-color="#8b5cf6" style="background-color:#8b5cf6" title="#8b5cf6"></button>
-                    <button type="button" class="wb-color-swatch" data-wb-color="#ec4899" style="background-color:#ec4899" title="#ec4899"></button>
-                    <button type="button" class="wb-color-swatch" data-wb-color="#14b8a6" style="background-color:#14b8a6" title="#14b8a6"></button>
-                    <button type="button" class="wb-color-swatch" data-wb-color="#f59e0b" style="background-color:#f59e0b" title="#f59e0b"></button>
-                    <button type="button" class="wb-color-swatch" data-wb-color="#6b7280" style="background-color:#6b7280" title="#6b7280"></button>
-                </div>
-                <span class="w-px h-6 bg-slate-200"></span>
-                <div class="flex items-center gap-1">
-                    <button type="button" class="wb-size-dot" data-wb-size="1" title="1px"><span class="wb-size-dot-inner" style="width:1px;height:1px"></span></button>
-                    <button type="button" class="wb-size-dot" data-wb-size="3" data-active="true" title="3px"><span class="wb-size-dot-inner" style="width:3px;height:3px"></span></button>
-                    <button type="button" class="wb-size-dot" data-wb-size="6" title="6px"><span class="wb-size-dot-inner" style="width:6px;height:6px"></span></button>
-                    <button type="button" class="wb-size-dot" data-wb-size="12" title="12px"><span class="wb-size-dot-inner" style="width:12px;height:12px"></span></button>
-                    <button type="button" class="wb-size-dot" data-wb-size="22" title="22px"><span class="wb-size-dot-inner" style="width:22px;height:22px"></span></button>
-                </div>
+    <div class="flex flex-col" style="height: calc(100vh - 4rem);" data-wb-root>
+        <header class="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 bg-white border-b border-slate-200 shadow-sm shrink-0">
+            <div class="flex items-center gap-3 min-w-0">
+                <input type="text" data-wb-title-input
+                       class="min-w-0 max-w-xs text-base font-bold tracking-tight bg-transparent border-b border-transparent hover:border-slate-200 focus:border-indigo-500 focus:outline-none px-1 py-0.5"
+                       placeholder="Untitled drawing"
+                       value="">
+                <span class="text-xs text-slate-500"><span data-wb-status>Ready</span></span>
             </div>
-
-            <div class="relative flex-1 min-h-0 p-4 bg-[#f8f8f6] flex items-center justify-center overflow-auto">
-                <div class="wb-canvas-frame relative aspect-video w-full max-w-6xl bg-white rounded-lg shadow-lg overflow-hidden"
-                     data-wb-canvas-wrap
-                     data-wb-variant="page"
-                     data-wb-board-id="{{ request.GET.drawing|default_if_none:'' }}"
-                     data-wb-save-url="{% url 'whiteboard:whiteboard-save' %}"
-                     data-wb-load-url-base="{% url 'whiteboard:whiteboard-load' pk=0 %}"
-                     data-wb-delete-url-base="{% url 'whiteboard:whiteboard-delete' pk=0 %}">
-                    <canvas data-wb-canvas class="wb-canvas"></canvas>
-                    <input type="text" data-wb-text-input class="wb-text-input" placeholder="Type and press Enter" style="display:none;">
-                </div>
+            <nav class="flex items-center gap-1 text-xs">
+                <a href="{% url 'whiteboard:whiteboard-page' %}" class="wb-mode-link" data-active="true">Page</a>
+                <a href="{% url 'whiteboard:whiteboard-overlay' %}" class="wb-mode-link">Overlay</a>
+                <a href="{% url 'whiteboard:whiteboard-annotate' %}" class="wb-mode-link">Annotate</a>
+            </nav>
+            <div class="flex items-center gap-2 text-[11px] text-slate-500 hidden md:flex">
+                <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">P</kbd> pen ·
+                <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">H</kbd> highlight ·
+                <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">E</kbd> erase ·
+                <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">L</kbd> line ·
+                <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">A</kbd> arrow ·
+                <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">R</kbd> rect ·
+                <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">C</kbd> circle ·
+                <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">T</kbd> text ·
+                <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">⌘Z</kbd> undo ·
+                <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">⌘S</kbd> save
             </div>
-        </section>
+        </header>
 
-        <aside class="wb-drawings-pane hidden md:flex flex-col w-64 border-l border-slate-200 bg-white shrink-0">
-            <div class="flex items-center justify-between px-4 h-12 border-b border-slate-200 shrink-0">
-                <h2 class="text-sm font-semibold tracking-tight">My drawings</h2>
-                <span class="text-xs text-slate-500">{{ drawings|length }}</span>
-            </div>
-            <div class="flex-1 overflow-y-auto p-3 space-y-2" data-wb-drawings-list>
-                {% if drawings %}
-                    {% for d in drawings %}
-                        <div class="wb-drawing-item {% if request.GET.drawing|stringformat:'s' == d.id|stringformat:'s' %}wb-item-active{% endif %}" data-wb-load-id="{{ d.id }}">
-                            <div class="wb-drawing-thumb">
-                                {% if d.image %}
-                                    <img src="{{ d.image.url }}" alt="{{ d.title }}" loading="lazy">
-                                {% else %}
-                                    <div class="wb-drawing-thumb-inner">#{{ d.id }}</div>
-                                {% endif %}
-                            </div>
-                            <div class="wb-drawing-meta">
-                                <div class="wb-drawing-title">{{ d.title|default:"Untitled" }}</div>
-                                <div class="wb-drawing-time">{{ d.updated_at|date:"M j, H:i" }}</div>
-                            </div>
-                            <div class="wb-drawing-actions">
-                                <button type="button" class="wb-mini-btn" data-wb-load-id="{{ d.id }}" title="Open">Open</button>
-                                <button type="button" class="wb-mini-btn wb-mini-btn-danger" data-wb-delete-id="{{ d.id }}" title="Delete">Del</button>
-                            </div>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <div data-wb-empty="true" class="wb-drawings-empty">
-                        No saved drawings yet.<br>
-                        Draw something and press <kbd class="px-1 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">Ctrl+S</kbd>.
+        <main class="flex flex-1 min-h-0">
+            <aside class="flex flex-col items-center gap-1 p-2 border-r border-slate-200 bg-white wb-toolbar-left shrink-0">
+                <button type="button" data-wb-tool="pen" class="wb-tool-btn" title="Pen (P)" aria-label="Pen">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/></svg>
+                </button>
+                <button type="button" data-wb-tool="highlighter" class="wb-tool-btn" title="Highlighter (H)" aria-label="Highlighter">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l-6 6v3h9l3-3"/><path d="M22 12l-4.6 4.6a2 2 0 0 1-2.8 0L11 13l4-4 3.6 3.6a2 2 0 0 1 0 2.8z"/></svg>
+                </button>
+                <button type="button" data-wb-tool="eraser" class="wb-tool-btn" title="Eraser (E)" aria-label="Eraser">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3a1 1 0 0 1 0-1.4l9.6-9.6a1 1 0 0 1 1.4 0l5.6 5.6a1 1 0 0 1 0 1.4L13 19"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+                </button>
+                <hr class="w-6 border-slate-200 my-1">
+                <button type="button" data-wb-tool="line" class="wb-tool-btn" title="Line (L)" aria-label="Line">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="19" x2="19" y2="5"/></svg>
+                </button>
+                <button type="button" data-wb-tool="arrow" class="wb-tool-btn" title="Arrow (A)" aria-label="Arrow">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </button>
+                <button type="button" data-wb-tool="rect" class="wb-tool-btn" title="Rectangle (R)" aria-label="Rectangle">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                </button>
+                <button type="button" data-wb-tool="circle" class="wb-tool-btn" title="Circle (C)" aria-label="Circle">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>
+                </button>
+                <button type="button" data-wb-tool="text" class="wb-tool-btn" title="Text (T)" aria-label="Text">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+                </button>
+                <hr class="w-6 border-slate-200 my-1">
+                <button type="button" data-wb-fill class="wb-tool-btn" title="Toggle fill" aria-label="Toggle fill" aria-pressed="false">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z"/><path d="m5 2 5 5"/><path d="M2 13h15"/><path d="M22 20a2 2 0 1 1-4 0c0-1.6 1.7-2.4 2-4 .3 1.6 2 2.4 2 4Z"/></svg>
+                </button>
+                <hr class="w-6 border-slate-200 my-1">
+                <button type="button" data-wb-undo class="wb-tool-btn" title="Undo (Ctrl+Z)" aria-label="Undo">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/></svg>
+                </button>
+                <button type="button" data-wb-redo class="wb-tool-btn" title="Redo (Ctrl+Shift+Z)" aria-label="Redo">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 15-6.7L21 13"/></svg>
+                </button>
+                <button type="button" data-wb-clear class="wb-tool-btn" title="Clear all" aria-label="Clear">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+                <hr class="w-6 border-slate-200 my-1">
+                <button type="button" data-wb-new class="wb-tool-btn" title="New drawing" aria-label="New drawing">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                </button>
+                <button type="button" data-wb-export class="wb-tool-btn" title="Download PNG" aria-label="Download PNG">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </button>
+                <button type="button" data-wb-save class="wb-tool-btn" title="Save (Ctrl+S)" aria-label="Save">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                </button>
+            </aside>
+
+            <section class="flex-1 flex flex-col min-w-0">
+                <div class="flex flex-wrap items-center gap-3 px-3 py-2 border-b border-slate-200 bg-white wb-toolbar-top shrink-0">
+                    <div class="flex items-center gap-1 flex-wrap" data-wb-color-group>
+                        <button type="button" class="wb-color-swatch" data-wb-color="#1e1e1e" data-active="true" style="background-color:#1e1e1e" title="#1e1e1e"></button>
+                        <button type="button" class="wb-color-swatch" data-wb-color="#ffffff" style="background-color:#ffffff" title="#ffffff"></button>
+                        <button type="button" class="wb-color-swatch" data-wb-color="#ef4444" style="background-color:#ef4444" title="#ef4444"></button>
+                        <button type="button" class="wb-color-swatch" data-wb-color="#f97316" style="background-color:#f97316" title="#f97316"></button>
+                        <button type="button" class="wb-color-swatch" data-wb-color="#eab308" style="background-color:#eab308" title="#eab308"></button>
+                        <button type="button" class="wb-color-swatch" data-wb-color="#22c55e" style="background-color:#22c55e" title="#22c55e"></button>
+                        <button type="button" class="wb-color-swatch" data-wb-color="#3b82f6" style="background-color:#3b82f6" title="#3b82f6"></button>
+                        <button type="button" class="wb-color-swatch" data-wb-color="#8b5cf6" style="background-color:#8b5cf6" title="#8b5cf6"></button>
+                        <button type="button" class="wb-color-swatch" data-wb-color="#ec4899" style="background-color:#ec4899" title="#ec4899"></button>
+                        <button type="button" class="wb-color-swatch" data-wb-color="#14b8a6" style="background-color:#14b8a6" title="#14b8a6"></button>
+                        <button type="button" class="wb-color-swatch" data-wb-color="#f59e0b" style="background-color:#f59e0b" title="#f59e0b"></button>
+                        <button type="button" class="wb-color-swatch" data-wb-color="#6b7280" style="background-color:#6b7280" title="#6b7280"></button>
                     </div>
-                {% endif %}
-            </div>
-        </aside>
-    </main>
+                    <span class="w-px h-6 bg-slate-200"></span>
+                    <div class="flex items-center gap-1">
+                        <button type="button" class="wb-size-dot" data-wb-size="1" title="1px"><span class="wb-size-dot-inner" style="width:1px;height:1px"></span></button>
+                        <button type="button" class="wb-size-dot" data-wb-size="3" data-active="true" title="3px"><span class="wb-size-dot-inner" style="width:3px;height:3px"></span></button>
+                        <button type="button" class="wb-size-dot" data-wb-size="6" title="6px"><span class="wb-size-dot-inner" style="width:6px;height:6px"></span></button>
+                        <button type="button" class="wb-size-dot" data-wb-size="12" title="12px"><span class="wb-size-dot-inner" style="width:12px;height:12px"></span></button>
+                        <button type="button" class="wb-size-dot" data-wb-size="22" title="22px"><span class="wb-size-dot-inner" style="width:22px;height:22px"></span></button>
+                    </div>
+                </div>
+
+                <div class="relative flex-1 min-h-0 p-4 bg-[#f8f8f6] flex items-center justify-center overflow-auto">
+                    <div class="wb-canvas-frame relative aspect-video w-full max-w-6xl bg-white rounded-lg shadow-lg overflow-hidden"
+                         data-wb-canvas-wrap
+                         data-wb-variant="page"
+                         data-wb-board-id="{{ request.GET.drawing|default_if_none:'' }}"
+                         data-wb-save-url="{% url 'whiteboard:whiteboard-save' %}"
+                         data-wb-load-url-base="{% url 'whiteboard:whiteboard-load' pk=0 %}"
+                         data-wb-delete-url-base="{% url 'whiteboard:whiteboard-delete' pk=0 %}">
+                        <canvas data-wb-canvas class="wb-canvas"></canvas>
+                        <input type="text" data-wb-text-input class="wb-text-input" placeholder="Type and press Enter" style="display:none;">
+                    </div>
+                </div>
+            </section>
+
+            <aside class="wb-drawings-pane hidden md:flex flex-col w-64 border-l border-slate-200 bg-white shrink-0">
+                <div class="flex items-center justify-between px-4 h-12 border-b border-slate-200 shrink-0">
+                    <h2 class="text-sm font-semibold tracking-tight">My drawings</h2>
+                    <span class="text-xs text-slate-500">{{ drawings|length }}</span>
+                </div>
+                <div class="flex-1 overflow-y-auto p-3 space-y-2" data-wb-drawings-list>
+                    {% if drawings %}
+                        {% for d in drawings %}
+                            <div class="wb-drawing-item {% if request.GET.drawing|stringformat:'s' == d.id|stringformat:'s' %}wb-item-active{% endif %}" data-wb-load-id="{{ d.id }}">
+                                <div class="wb-drawing-thumb">
+                                    {% if d.image %}
+                                        <img src="{{ d.image.url }}" alt="{{ d.title }}" loading="lazy">
+                                    {% else %}
+                                        <div class="wb-drawing-thumb-inner">#{{ d.id }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="wb-drawing-meta">
+                                    <div class="wb-drawing-title">{{ d.title|default:"Untitled" }}</div>
+                                    <div class="wb-drawing-time">{{ d.updated_at|date:"M j, H:i" }}</div>
+                                </div>
+                                <div class="wb-drawing-actions">
+                                    <button type="button" class="wb-mini-btn" data-wb-load-id="{{ d.id }}" title="Open">Open</button>
+                                    <button type="button" class="wb-mini-btn wb-mini-btn-danger" data-wb-delete-id="{{ d.id }}" title="Delete">Del</button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div data-wb-empty="true" class="wb-drawings-empty">
+                            No saved drawings yet.<br>
+                            Draw something and press <kbd class="px-1 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">Ctrl+S</kbd>.
+                        </div>
+                    {% endif %}
+                </div>
+            </aside>
+        </main>
+    </div>
 </div>
+
+<script>
+(function () {
+    var sidebar    = document.getElementById('app-sidebar');
+    var overlay    = document.getElementById('sidebar-overlay');
+    var toggleBtn  = document.getElementById('sidebar-toggle');
+    var closeBtn   = document.getElementById('sidebar-close');
+    if (!sidebar || !toggleBtn) return;
+
+    function isOpen()    { return sidebar.getAttribute('data-open') === 'true'; }
+    function setOpen(v)  {
+        sidebar.setAttribute('data-open', v ? 'true' : 'false');
+        if (overlay) overlay.setAttribute('data-open', v ? 'true' : 'false');
+        toggleBtn.setAttribute('aria-expanded', v ? 'true' : 'false');
+        document.body.style.overflow = v ? 'hidden' : '';
+    }
+    function open()  { setOpen(true); }
+    function close() { setOpen(false); }
+
+    toggleBtn.addEventListener('click', function () { isOpen() ? close() : open(); });
+    if (closeBtn)  closeBtn.addEventListener('click', close);
+    if (overlay)   overlay.addEventListener('click', close);
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && isOpen()) close();
+    });
+})();
+</script>
 <script src="{% static 'whiteboard/whiteboard.js' %}"></script>
 </body>
 </html>
